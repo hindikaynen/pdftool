@@ -63,18 +63,48 @@ public static class PdfApplyEngine
 
                     foreach (var r in selected)
                     {
-                        // Anchor point is TOP-LEFT of found text bbox.
-                        var anchorX = (double)r.GetX();
-                        var anchorY = (double)(r.GetY() + r.GetHeight());
+                        // Anchor point is VISUAL TOP-LEFT of found text bbox (in "view" coords, i.e. as user sees the rotated page).
+                        var rotation = PageRotationTransform.NormalizeRotation(page.GetRotation());
+                        var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+
+                        var ux = (double)r.GetX();
+                        var uy = (double)r.GetY();
+                        var uw = (double)r.GetWidth();
+                        var uh = (double)r.GetHeight();
+
+                        // Take all four corners of the user-space rectangle, transform to view space,
+                        // then select the top-left corner in view (max Y, then min X).
+                        var cornersUser = new[]
+                        {
+                            new PointD(ux, uy),                 // bottom-left
+                            new PointD(ux + uw, uy),            // bottom-right
+                            new PointD(ux, uy + uh),            // top-left (unrotated)
+                            new PointD(ux + uw, uy + uh)        // top-right
+                        };
+
+                        PointD best = default;
+                        var hasBest = false;
+                        foreach (var cu in cornersUser)
+                        {
+                            var cv = PageRotationTransform.UserToView(cu, unrotW, unrotH, rotation);
+                            if (!hasBest || cv.Y > best.Y || (Math.Abs(cv.Y - best.Y) < 1e-6 && cv.X < best.X))
+                            {
+                                best = cv;
+                                hasBest = true;
+                            }
+                        }
+
+                        var anchorX = best.X;
+                        var anchorY = best.Y;
 
                         var dx = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[0] : 0;
                         var dy = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[1] : 0;
 
-                        // For textAnchor, offset is [right, down]
+                        // For textAnchor, offset is [right, down] in "view" coordinates.
                         anchorX += dx;
                         anchorY -= dy;
 
-                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeft(pdf, page, plan.Placement, plan.Primitives, plan.Name, anchorX, anchorY);
+                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, plan.Name, anchorX, anchorY);
                     }
 
                     continue;
@@ -94,31 +124,45 @@ internal static class OverlayStampRenderer
         if (bounds is null)
             return;
 
-        var pageSize = page.GetPageSize();
+        
+        var rotation = page.GetRotation();
 
-        var origin = PlacementResolver.ResolveCornerOriginVariantB(
-            pageWidth: pageSize.GetWidth(),
-            pageHeight: pageSize.GetHeight(),
-            corner: placement.Corner!.Value,
-            offset: placement.Offset,
-            overlayMinX: bounds.Value.MinX,
-            overlayMinY: bounds.Value.MinY,
-            overlayMaxX: bounds.Value.MaxX,
-            overlayMaxY: bounds.Value.MaxY
+var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
+
+// Resolve placement in VIEW coordinates (what user sees), then convert the resulting rectangle to USER space.
+var originView = PlacementResolver.ResolveCornerOriginVariantB(
+    pageWidth: viewW,
+    pageHeight: viewH,
+    corner: placement.Corner!.Value,
+    offset: placement.Offset,
+    overlayMinX: bounds.Value.MinX,
+    overlayMinY: bounds.Value.MinY,
+    overlayMaxX: bounds.Value.MaxX,
+    overlayMaxY: bounds.Value.MaxY
+);
+
+var viewRect = new Rectangle(
+    (float)(originView.X + bounds.Value.MinX),
+    (float)(originView.Y + bounds.Value.MinY),
+    (float)bounds.Value.Width,
+    (float)bounds.Value.Height
+);
+
+var rectOnPage = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
+
+        // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
+        var preTransform = PageRotationTransform.GetViewToUserMatrixForAppearanceBox(
+            rotation,
+            rectOnPage.GetWidth(),
+            rectOnPage.GetHeight()
         );
 
-        var rectOnPage = new Rectangle(
-            (float)(origin.X + bounds.Value.MinX),
-            (float)(origin.Y + bounds.Value.MinY),
-            (float)bounds.Value.Width,
-            (float)bounds.Value.Height
-        );
-
-        var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
+var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
-        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives);
+        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
 
         var annot = new PdfStampAnnotation(rectOnPage);
         annot.SetContents($"pdftool overlay: {overlayName}");
@@ -128,13 +172,58 @@ internal static class OverlayStampRenderer
         page.AddAnnotation(annot);
     }
 
-    public static void RenderOverlayAsStampAtTopLeft(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftX, double topLeftY)
+    
+public static void RenderOverlayAsStampAtTopLeftView(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftXView, double topLeftYView)
+{
+    var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
+    if (bounds is null)
+        return;
+
+    var rotation = page.GetRotation();
+
+    // Build the overlay rectangle in VIEW coordinates (origin bottom-left, axes as seen by user).
+    var viewRect = new Rectangle(
+        (float)topLeftXView,
+        (float)(topLeftYView - bounds.Value.Height),
+        (float)bounds.Value.Width,
+        (float)bounds.Value.Height
+    );
+
+    // Convert view-rect into USER space, taking page rotation into account.
+    var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+    var userRect = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
+
+    // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
+    var preTransform = PageRotationTransform.GetViewToUserMatrixForAppearanceBox(
+        rotation,
+        userRect.GetWidth(),
+        userRect.GetHeight()
+    );
+
+    var appearanceBox = new Rectangle(0, 0, userRect.GetWidth(), userRect.GetHeight());
+    var xobj = new PdfFormXObject(appearanceBox);
+
+    // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance (in VIEW coords).
+    var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
+    PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
+
+    var annot = new PdfStampAnnotation(userRect);
+    annot.SetContents($"pdftool overlay: {overlayName}");
+    annot.SetFlag(PdfAnnotation.PRINT);
+    annot.SetNormalAppearance(xobj.GetPdfObject());
+
+    page.AddAnnotation(annot);
+}
+
+public static void RenderOverlayAsStampAtTopLeft(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftX, double topLeftY)
     {
         var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
         if (bounds is null)
             return;
 
-        // Position overlay so that its TOP-LEFT corner is at (topLeftX, topLeftY).
+        
+        var rotation = page.GetRotation();
+// Position overlay so that its TOP-LEFT corner is at (topLeftX, topLeftY).
         // Given bounds (minX..maxX, minY..maxY) in overlay coordinates, the stamp rectangle on page is:
         //   x = topLeftX
         //   y = topLeftY - height
@@ -145,12 +234,19 @@ internal static class OverlayStampRenderer
             (float)bounds.Value.Height
         );
 
+        // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
+        var preTransform = PageRotationTransform.GetViewToUserMatrixForAppearanceBox(
+            rotation,
+            rectOnPage.GetWidth(),
+            rectOnPage.GetHeight()
+        );
+
         var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
         // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance.
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
-        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives);
+        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
 
         var annot = new PdfStampAnnotation(rectOnPage);
         annot.SetContents($"pdftool overlay: {overlayName}");
@@ -304,9 +400,11 @@ internal static class PrimitiveBoundsCalculator
 
 public static class PrimitiveRenderer
 {
-    public static void RenderOnXObject(PdfDocument pdf, PdfFormXObject xobj, PointD origin, IReadOnlyList<PrimitiveSpec> primitives)
+    public static void RenderOnXObject(PdfDocument pdf, PdfFormXObject xobj, PointD origin, IReadOnlyList<PrimitiveSpec> primitives, float[]? preTransform = null)
     {
         var pdfCanvas = new PdfCanvas(xobj, pdf);
+        if (preTransform is not null)
+            pdfCanvas.ConcatMatrix(preTransform[0], preTransform[1], preTransform[2], preTransform[3], preTransform[4], preTransform[5]);
         var canvas = new Canvas(pdfCanvas, new Rectangle(0, 0, xobj.GetWidth(), xobj.GetHeight()));
 
         foreach (var prim in primitives)

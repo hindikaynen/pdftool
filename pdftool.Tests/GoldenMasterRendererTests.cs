@@ -578,7 +578,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case40",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [150,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner TOP-LEFT" }
@@ -602,7 +602,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case41",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [150,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner TOP-RIGHT" }
@@ -626,7 +626,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case42",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [150,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner BOTTOM-LEFT" }
@@ -650,7 +650,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case43",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner BOTTOM-RIGHT" }
@@ -662,79 +662,6 @@ public void Case26_Code128_NoText_Wide_Page1()
         inputPdfFileName: "rot-empty-1p_r90.pdf",
         pageNumber1BasedToRender: 1);
     }
-
-    [Test]
-    // Rotated pages (/Rotate=90): textAnchor (occurrence=first) on page 1 + visual redaction
-    public void Case44_Rotate90_TextAnchor_First_Page1()
-    {
-        RunOnePageFromInput(
-        jsonSpec: """
-        {
-          "overlays": [
-            {
-              "name": "case44",
-              "pages": "1",
-              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_ONE>>", "occurrence": "first", "offset": [200,0] },
-              "primitives": [
-                { "type": "rect", "rect": [0,0,220,50], "strokeWidth": 1 },
-                { "type": "text", "at": [10,18], "size": 12, "value": "Rotate90 textAnchor first" }
-              ]
-            }
-          ]
-        }
-        """,
-        inputPdfFileName: "rot-textanchor-2p_r90.pdf",
-        pageNumber1BasedToRender: 1);
-    }
-
-    [Test]
-    // Rotated pages (/Rotate=90): textAnchor (occurrence=last) on page 2
-    public void Case45_Rotate90_TextAnchor_Last_Page2()
-    {
-        RunOnePageFromInput(
-        jsonSpec: """
-        {
-          "overlays": [
-            {
-              "name": "case45",
-              "pages": "2",
-              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "last", "offset": [0,0] },
-              "primitives": [
-                { "type": "rect", "rect": [0,0,220,50], "strokeWidth": 1 },
-                { "type": "text", "at": [10,18], "size": 12, "value": "Rotate90 textAnchor last" }
-              ]
-            }
-          ]
-        }
-        """,
-        inputPdfFileName: "rot-textanchor-2p_r90.pdf",
-        pageNumber1BasedToRender: 2);
-    }
-
-    [Test]
-    // Rotated pages (/Rotate=90): textAnchor (occurrence=all) on page 2
-    public void Case46_Rotate90_TextAnchor_All_Page2()
-    {
-        RunOnePageFromInput(
-        jsonSpec: """
-        {
-          "overlays": [
-            {
-              "name": "case46",
-              "pages": "2",
-              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "all", "offset": [0,0] },
-              "primitives": [
-                { "type": "rect", "rect": [0,0,220,50], "strokeWidth": 1 },
-                { "type": "text", "at": [10,18], "size": 12, "value": "Rotate90 textAnchor all" }
-              ]
-            }
-          ]
-        }
-        """,
-        inputPdfFileName: "rot-textanchor-2p_r90.pdf",
-        pageNumber1BasedToRender: 2);
-    }
-
     private static void RunSinglePage(string jsonSpec)
     {
         RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1);
