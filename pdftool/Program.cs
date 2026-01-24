@@ -13,37 +13,59 @@ internal static class Program
         var root = new RootCommand("pdftool - PDF overlay tool (JSON spec)");
 
         // validate
-        var validateCmd = new Command("validate", "Validate overlays JSON (no PDF required)")
+        var validateJson = new Option<FileInfo>("--json")
         {
-            new Option<FileInfo>("--json", "Overlays JSON path") { IsRequired = true }
+            Description = "Overlays JSON path",
+            Required = true
         };
 
-        validateCmd.SetHandler((FileInfo jsonFile) =>
+        var validateCmd = new Command("validate", "Validate overlays JSON (no PDF required)");
+        validateCmd.Options.Add(validateJson);
+
+        validateCmd.SetAction(parseResult =>
         {
+            var jsonFile = parseResult.GetValue(validateJson)!;
             RunValidate(jsonFile);
-        }, validateCmd.Options[0] as Option<FileInfo>);
+        });
 
-        root.AddCommand(validateCmd);
+        root.Subcommands.Add(validateCmd);
 
-        // apply (step 0/1: open pdf, validate json, build plan, write output as a copy)
-        var applyCmd = new Command("apply", "Apply overlays to a PDF (currently: builds plan and rewrites PDF)")
+        // apply
+        var inOpt = new Option<FileInfo>("--in")
         {
-            new Option<FileInfo>("--in", "Input PDF path") { IsRequired = true },
-            new Option<FileInfo>("--out", "Output PDF path") { IsRequired = true },
-            new Option<FileInfo>("--json", "Overlays JSON path") { IsRequired = true }
+            Description = "Input PDF path",
+            Required = true
         };
 
-        applyCmd.SetHandler((FileInfo inPdf, FileInfo outPdf, FileInfo jsonFile) =>
+        var outOpt = new Option<FileInfo>("--out")
         {
+            Description = "Output PDF path",
+            Required = true
+        };
+
+        var applyJson = new Option<FileInfo>("--json")
+        {
+            Description = "Overlays JSON path",
+            Required = true
+        };
+
+        var applyCmd = new Command("apply", "Apply overlays to a PDF");
+        applyCmd.Options.Add(inOpt);
+        applyCmd.Options.Add(outOpt);
+        applyCmd.Options.Add(applyJson);
+
+        applyCmd.SetAction(parseResult =>
+        {
+            var inPdf = parseResult.GetValue(inOpt)!;
+            var outPdf = parseResult.GetValue(outOpt)!;
+            var jsonFile = parseResult.GetValue(applyJson)!;
+
             RunApply(inPdf, outPdf, jsonFile);
-        },
-        applyCmd.Options[0] as Option<FileInfo>,
-        applyCmd.Options[1] as Option<FileInfo>,
-        applyCmd.Options[2] as Option<FileInfo>);
+        });
 
-        root.AddCommand(applyCmd);
+        root.Subcommands.Add(applyCmd);
 
-        return root.Invoke(args);
+        return root.Parse(args).Invoke();
     }
 
     private static void RunValidate(FileInfo jsonFile)
