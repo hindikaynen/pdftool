@@ -26,7 +26,7 @@ public static class PdfRasterizer
             pngPath,
             pdfStream,
             pageIndex0,
-            options: new RenderOptions(Dpi: dpi)
+            options: new RenderOptions(Dpi: dpi, WithAnnotations: true)
         );
     }
 }

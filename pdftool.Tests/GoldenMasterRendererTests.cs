@@ -14,6 +14,9 @@ public class GoldenMasterRendererTests
     [Test]
     public void Case02_RectCornerRadius_Page1() => RunSinglePage("case02.json", pageNumber1Based: 1);
 
+    [Test]
+    public void Case03_TextBlock_Wrap_Page1() => RunSinglePage("case03.json", pageNumber1Based: 1);
+
     private static void RunSinglePage(string specFileName, int pageNumber1Based)
     {
         // Expected baselines live in the source tree (pdftool.Tests/TestData/expected).
