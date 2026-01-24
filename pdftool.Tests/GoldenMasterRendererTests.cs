@@ -11,19 +11,24 @@ public class GoldenMasterRendererTests
     [Test]
     public void Case01_RectAndText_Page1()
     {
-        var baseDir = TestContext.CurrentContext.TestDirectory;
-        var testData = Path.Combine(baseDir, "TestData");
+        // Expected baselines live in the source tree (pdftool.Tests/TestData/expected).
+        // Actual artifacts are written into the test work directory (bin/...), so they don't pollute the repo.
+        var testData = TestPaths.GetTestDataDir();
 
         var inputPdf = Path.Combine(testData, "input", "empty-10p.pdf");
         var specJson = Path.Combine(testData, "specs", "case01.json");
 
-        var actualDir = Path.Combine(testData, "actual");
-        var expectedDir = Path.Combine(testData, "expected");
-
+        var workDir = TestContext.CurrentContext.WorkDirectory;
+        var actualDir = Path.Combine(workDir, "pdftool_test_artifacts", "actual");
         Directory.CreateDirectory(actualDir);
+
+        var expectedDir = Path.Combine(testData, "expected");
         Directory.CreateDirectory(expectedDir);
 
-        var actualPdf = Path.Combine(actualDir, "case01.output.pdf");
+        // Baseline naming: {TestClass}.{TestMethod}[.{Case}].p{Page}.png
+        var testId = $"{TestContext.CurrentContext.Test.ClassName}.{TestContext.CurrentContext.Test.MethodName}";
+
+        var actualPdf = Path.Combine(actualDir, $"{testId}.output.pdf");
 
         // Apply
         using (var reader = new PdfReader(inputPdf))
@@ -36,17 +41,17 @@ public class GoldenMasterRendererTests
 
         // Rasterize page 1
         var dpi = 144;
-        var actualPng = Path.Combine(actualDir, "case01.p1.png");
+        var actualPng = Path.Combine(actualDir, $"{testId}.p1.png");
         PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: 1, dpi: dpi, pngPath: actualPng);
 
-        var expectedPng = Path.Combine(expectedDir, "case01.p1.png");
+        var expectedPng = Path.Combine(expectedDir, $"{testId}.p1.png");
 
         if (!File.Exists(expectedPng))
         {
             if (GoldenTestConfig.UpdateBaselines)
             {
                 File.Copy(actualPng, expectedPng, overwrite: true);
-                Assert.Pass("Baseline created. Review and commit expected PNG.");
+                Assert.Pass("Baseline created in TestData/expected. Review and commit expected PNG.");
             }
 
             Assert.Fail("Baseline is missing. Enable UPDATE_BASELINES in GoldenTestConfig.cs to generate it.");
@@ -55,7 +60,7 @@ public class GoldenMasterRendererTests
         if (GoldenTestConfig.UpdateBaselines)
         {
             File.Copy(actualPng, expectedPng, overwrite: true);
-            Assert.Pass("Baseline updated. Review and commit expected PNG.");
+            Assert.Pass("Baseline updated in TestData/expected. Review and commit expected PNG.");
         }
 
         ImageComparer.AssertPngEqual(expectedPng, actualPng);

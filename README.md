@@ -38,3 +38,12 @@ dotnet run --project pdftool -- apply --in input.pdf --out output.pdf --json ove
   - edit `pdftool.Tests/GoldenTestConfig.cs` and enable `#define UPDATE_BASELINES`
   - run `dotnet test`
   - review generated/updated PNGs in `TestData/expected` and commit them
+
+
+## iText 8 crypto adapter
+iText 8 requires an explicit Bouncy Castle adapter dependency for encryption/signing-related internals.
+This solution references `itext.bouncy-castle-adapter`.
+
+
+### Baseline naming
+Baselines are saved as `{TestClass}.{TestMethod}.p{Page}.png` in `pdftool.Tests/TestData/expected`.
