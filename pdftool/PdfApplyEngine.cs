@@ -5,7 +5,9 @@ using iText.Kernel.Pdf.Canvas;
 using iText.Kernel.Pdf.Xobject;
 using iText.Layout;
 using iText.Layout.Element;
+using iText.Layout.Layout;
 using iText.Layout.Properties;
+using iText.Layout.Renderer;
 
 namespace PdfTool;
 
@@ -20,7 +22,7 @@ public static class PdfApplyEngine
     ///
     /// Current iteration supports:
     /// - placement: corner only
-    /// - primitives: rect(+cornerRadius), line, text(at), text(rect+wrap)
+    /// - primitives: rect(+cornerRadius), line, text(at), text(rect+wrap+valign)
     /// </summary>
     public static void Apply(PdfDocument pdf, DocumentSpec spec)
     {
@@ -61,12 +63,9 @@ internal static class OverlayStampRenderer
     public static void RenderOverlayAsStamp(PdfDocument pdf, PdfPage page, PointD origin, IReadOnlyList<PrimitiveSpec> primitives, string overlayName)
     {
         var bounds = PrimitiveBoundsCalculator.ComputeBounds(primitives);
-
-        // If nothing has measurable bounds, skip.
         if (bounds is null)
             return;
 
-        // Place bounds on the page
         var rectOnPage = new Rectangle(
             (float)(origin.X + bounds.Value.MinX),
             (float)(origin.Y + bounds.Value.MinY),
@@ -74,15 +73,12 @@ internal static class OverlayStampRenderer
             (float)bounds.Value.Height
         );
 
-        // Create appearance XObject with bbox starting at (0,0)
         var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
-        // Draw into appearance with a shifted origin so that primitive local coordinates map into [0..w, 0..h]
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
         PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives);
 
-        // Create stamp annotation and assign appearance
         var annot = new PdfStampAnnotation(rectOnPage);
         annot.SetContents($"pdftool overlay: {overlayName}");
         annot.SetFlag(PdfAnnotation.PRINT);
@@ -151,7 +147,6 @@ internal static class PrimitiveBoundsCalculator
                     }
                     else if (t.At is not null)
                     {
-                        // Conservative bounds for point text: width is the same constant used in SetFixedPosition.
                         var fontSize = t.Size ?? 12;
                         Include(t.At[0], t.At[1], t.At[0] + 1000, t.At[1] + fontSize * 1.2);
                     }
@@ -162,7 +157,6 @@ internal static class PrimitiveBoundsCalculator
 
         if (!hasAny) return null;
 
-        // Ensure non-zero bbox
         var width = maxX - minX;
         var height = maxY - minY;
         if (width <= 0) { maxX = minX + 1; }
@@ -244,6 +238,7 @@ public static class PrimitiveRenderer
 
     private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t)
     {
+        // Point text
         if (t.At is not null)
         {
             var x = (float)(o.X + t.At[0]);
@@ -260,15 +255,13 @@ public static class PrimitiveRenderer
             return;
         }
 
+        // Block text
         if (t.Rect is not null)
         {
             var x = (float)(o.X + t.Rect[0]);
             var y = (float)(o.Y + t.Rect[1]);
             var w = (float)t.Rect[2];
             var h = (float)t.Rect[3];
-
-            var area = new Rectangle(x, y, w, h);
-            using var blockCanvas = new Canvas(canvas.GetPdfCanvas(), area);
 
             var p = new Paragraph(t.Value);
 
@@ -288,10 +281,56 @@ public static class PrimitiveRenderer
                 p.SetTextAlignment(align);
             }
 
-            blockCanvas.Add(p);
+            // Vertical alignment: default TOP.
+            var valign = t.VAlign ?? VerticalAlign.top;
+
+            // Measure paragraph height for the given width.
+            var paraHeight = MeasureParagraphHeight(canvas, p, w);
+
+            var yStart = valign switch
+            {
+                VerticalAlign.bottom => y,
+                VerticalAlign.middle => y + (h - paraHeight) / 2f,
+                _ => y + (h - paraHeight) // top
+            };
+
+            // Clip to the target rectangle, so overflow doesn't escape.
+            var pdfCanvas = canvas.GetPdfCanvas();
+            pdfCanvas.SaveState();
+            pdfCanvas.Rectangle(x, y, w, h);
+            pdfCanvas.Clip();
+            pdfCanvas.EndPath();
+
+            // Lay out the paragraph in its own area (height = measured), positioned according to valign.
+            var layoutArea = new Rectangle(x, yStart, w, Math.Max(paraHeight, 1));
+            using (var blockCanvas = new Canvas(pdfCanvas, layoutArea))
+            {
+                blockCanvas.Add(p);
+            }
+
+            pdfCanvas.RestoreState();
             return;
         }
 
         throw new InvalidOperationException("Text primitive must have either 'at' or 'rect'.");
+    }
+
+    private static float MeasureParagraphHeight(Canvas canvas, Paragraph p, float width)
+    {
+        // Measure the occupied height of the paragraph when wrapped to the given width.
+        var hugeHeight = 10_000f;
+        var measureRect = new Rectangle(0, 0, width, hugeHeight);
+
+        using var measureCanvas = new Canvas(canvas.GetPdfCanvas(), measureRect);
+
+        IRenderer renderer = p.CreateRendererSubTree();
+        renderer.SetParent(measureCanvas.GetRenderer());
+
+        var result = renderer.Layout(new LayoutContext(new LayoutArea(1, measureRect)));
+
+        if (result.GetStatus() != LayoutResult.FULL)
+            return hugeHeight;
+
+        return result.GetOccupiedArea().GetBBox().GetHeight();
     }
 }

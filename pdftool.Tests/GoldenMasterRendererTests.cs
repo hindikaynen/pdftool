@@ -86,6 +86,90 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
+    // Primitive: text(rect) with valign=top
+    public void Case06_TextRect_VAlignTop_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case06",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-420] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
+                {
+                  "type": "text",
+                  "rect": [10,10,300,90],
+                  "wrap": true,
+                  "size": 12,
+                  "valign": "top",
+                  "value": "VAlign TOP\nLine 2\nLine 3"
+                }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
+    // Primitive: text(rect) with valign=middle
+    public void Case07_TextRect_VAlignMiddle_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case07",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-560] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
+                {
+                  "type": "text",
+                  "rect": [10,10,300,90],
+                  "wrap": true,
+                  "size": 12,
+                  "valign": "middle",
+                  "value": "VAlign MIDDLE\nLine 2\nLine 3"
+                }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
+    // Primitive: text(rect) with valign=bottom
+    public void Case08_TextRect_VAlignBottom_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case08",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-700] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
+                {
+                  "type": "text",
+                  "rect": [10,10,300,90],
+                  "wrap": true,
+                  "size": 12,
+                  "valign": "bottom",
+                  "value": "VAlign BOTTOM\nLine 2\nLine 3"
+                }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
     // Primitive: line with strokeWidth
     public void Case04_Line_StrokeWidth_Page1()
     {
@@ -122,7 +206,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case10",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-520] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-980] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,200,80], "cornerRadius": 8, "strokeWidth": 1 },
                 { "type": "image", "rect": [10,10,60,60], "data": { "mime": "image/png", "base64": "{{png1x1}}" } },
