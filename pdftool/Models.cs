@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PdfTool;
 
 namespace PdfTool;
 
@@ -153,21 +154,10 @@ public sealed class LinePrimitiveSpec : PrimitiveSpec
     public double? StrokeWidth { get; init; }
 }
 
-public sealed     [JsonPropertyName("base64")]
-    public required string Base64 { get; init; }
-}
-
-public sealed 
 class ImagePrimitiveSpec : PrimitiveSpec
 {
     public double[] Rect { get; init; }
     public string Base64 { get; init; }
-}
-
-
-    // Only base64 payload is supported (no src)
-    [JsonPropertyName("data")]
-    public required ImageDataSpec Data { get; init; }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]

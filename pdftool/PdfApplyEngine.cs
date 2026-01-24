@@ -281,7 +281,7 @@ public static class PrimitiveRenderer
 
     private static void DrawImage(PdfCanvas c, PointD o, ImagePrimitiveSpec img)
     {
-        if (img.Base64
+        if (string.IsNullOrEmpty(img.Base64))
             throw new FormatException("Image primitive: data.base64 is required.");
 
         byte[] bytes;

@@ -62,16 +62,10 @@ public static class JsonSpecValidator
                 RequireLen(overlayName, "image.rect", im.Rect, 4);
                 if (im.Rect[2] < 0 || im.Rect[3] < 0)
                     throw new FormatException($"Overlay '{overlayName}': image.w/h must be >= 0");
-                if (im.Data is null)
-                    throw new FormatException($"Overlay '{overlayName}': image.data is required");
-                if (string.IsNullOrWhiteSpace(im.Data.Mime))
-                    throw new FormatException($"Overlay '{overlayName}': image.base64 is required");
-                if (!IsSupportedImageMime(im.Data.Mime))
-                    throw new FormatException($"Overlay '{overlayName}': unsupported image mime '{im.Data.Mime}' (supported: image/png, image/jpeg)");
-                if (string.IsNullOrWhiteSpace(im.Data.Base64))
+                if (im.Base64 is null)
                     throw new FormatException($"Overlay '{overlayName}': image.base64 is required");
                 // Base64 syntax check (no heavy decoding)
-                TryValidateBase64(im.Data.Base64, overlayName);
+                TryValidateBase64(im.Base64, overlayName);
                 break;
 
             case BarcodePrimitiveSpec bc:

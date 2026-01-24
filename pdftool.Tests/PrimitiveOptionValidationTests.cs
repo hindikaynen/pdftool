@@ -530,10 +530,10 @@ public class PrimitiveOptionValidationTests
     }
 
     [Test]
-    public void Image_DataMissing_Fails()
+    public void Image_Base64Missing_Fails()
     {
-        // NOTE: 'data' is required by the model, so this fails during JSON parsing (before validation).
-        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
+        // NOTE: 'base64' is required by the model.
+        var ov = ParseFirstOverlay("""
         {
           "overlays": [
             {
@@ -546,55 +546,16 @@ public class PrimitiveOptionValidationTests
             }
           ]
         }
-        """));
-    }
-
-    [Test]
-    public void Image_MimeMissing_Fails()
-    {
-        // NOTE: 'mime' is required by the model, so this fails during JSON parsing (before validation).
-        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
-        {
-          "overlays": [
-            {
-              "name": "I",
-              "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft" },
-              "primitives": [
-                { "type": "image", "rect": [0,0,10,10], "base64": "AA==" }
-              ]
-            }
-          ]
-        }
-        """));
-    }
-
-    [Test]
-    public void Image_MimeUnsupported_Fails()
-    {
-        var ov = ParseFirstOverlay("""
-        {
-          "overlays": [
-            {
-              "name": "I",
-              "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft" },
-              "primitives": [
-                { "type": "image", "rect": [0,0,10,10], "base64": "AA==" }
-              ]
-            }
-          ]
-        }
         """);
 
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
     [Test]
-    public void Image_Base64Missing_Fails()
+    public void Image_Base64Incorrect_Fails()
     {
-        // NOTE: 'base64' is required by the model, so this fails during JSON parsing (before validation).
-        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
+        // NOTE: 'base64' is required by the model
+        var ov = ParseFirstOverlay("""
         {
           "overlays": [
             {
