@@ -72,8 +72,12 @@ public static class PdfApplyEngine
                         var uw = (double)r.GetWidth();
                         var uh = (double)r.GetHeight();
 
-                        // Take all four corners of the user-space rectangle, transform to view space,
-                        // then select the top-left corner in view (max Y, then min X).
+                        // Convert the user-space bbox into view-space (as the user sees the rotated page)
+                        // and pick the visible TOP-LEFT point.
+                        //
+                        // Important nuance: the visible top-left of a rotated rectangle is best defined as
+                        // the top-left of its axis-aligned bounding box in VIEW space, i.e. (minX, maxY).
+                        // This matches what people mean by “top-left on screen” regardless of rotation.
                         var cornersUser = new[]
                         {
                             new PointD(ux, uy),                 // bottom-left
@@ -82,20 +86,17 @@ public static class PdfApplyEngine
                             new PointD(ux + uw, uy + uh)        // top-right
                         };
 
-                        PointD best = default;
-                        var hasBest = false;
+                        var minX = double.PositiveInfinity;
+                        var maxY = double.NegativeInfinity;
                         foreach (var cu in cornersUser)
                         {
                             var cv = PageRotationTransform.UserToView(cu, unrotW, unrotH, rotation);
-                            if (!hasBest || cv.Y > best.Y || (Math.Abs(cv.Y - best.Y) < 1e-6 && cv.X < best.X))
-                            {
-                                best = cv;
-                                hasBest = true;
-                            }
+                            if (cv.X < minX) minX = cv.X;
+                            if (cv.Y > maxY) maxY = cv.Y;
                         }
 
-                        var anchorX = best.X;
-                        var anchorY = best.Y;
+                        var anchorX = minX;
+                        var anchorY = maxY;
 
                         var dx = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[0] : 0;
                         var dy = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[1] : 0;
