@@ -139,6 +139,11 @@ internal static class PrimitiveBoundsCalculator
                         break;
                     }
 
+                case BarcodePrimitiveSpec bc:
+                    // Bounds for barcodes are defined by their rect.
+                    Include(bc.Rect[0], bc.Rect[1], bc.Rect[0] + bc.Rect[2], bc.Rect[1] + bc.Rect[3]);
+                    break;
+
                 case ImagePrimitiveSpec img:
                     {
                         // Image primitive currently supports only rect: [x,y,w,h]
