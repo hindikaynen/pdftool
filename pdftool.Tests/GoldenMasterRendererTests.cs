@@ -644,6 +644,30 @@ public void Case26_Code128_NoText_Wide_Page1()
     public void Case43_Rotate90_Corner_BottomRight_Page1()
     {
         RunOnePageFromInput(
+            jsonSpec: """
+                      {
+                        "overlays": [
+                          {
+                            "name": "case43",
+                            "pages": "1",
+                            "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
+                            "primitives": [
+                              { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                              { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner BOTTOM-RIGHT" }
+                            ]
+                          }
+                        ]
+                      }
+                      """,
+            inputPdfFileName: "rot-empty-1p_r90.pdf",
+            pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // Rotated page (/Rotate=180): corner placement BOTTOM-RIGHT
+    public void Case43_Rotate180_Corner_BottomRight_Page1()
+    {
+        RunOnePageFromInput(
         jsonSpec: """
         {
           "overlays": [
@@ -653,15 +677,184 @@ public void Case26_Code128_NoText_Wide_Page1()
               "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner BOTTOM-RIGHT" }
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner BOTTOM-RIGHT" }
               ]
             }
           ]
         }
         """,
-        inputPdfFileName: "rot-empty-1p_r90.pdf",
+        inputPdfFileName: "rot-empty-1p_r180.pdf",
         pageNumber1BasedToRender: 1);
     }
+
+        [Test]
+    // Rotated page (/Rotate=180): corner placement TOP-LEFT
+    public void Case40_Rotate180_Corner_TopLeft_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case40",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner TOP-LEFT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r180.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // Rotated page (/Rotate=180): corner placement TOP-RIGHT
+    public void Case41_Rotate180_Corner_TopRight_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case41",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner TOP-RIGHT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r180.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // Rotated page (/Rotate=180): corner placement BOTTOM-LEFT
+    public void Case42_Rotate180_Corner_BottomLeft_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case42",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner BOTTOM-LEFT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r180.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+        [Test]
+    // Rotated page (/Rotate=270): corner placement BOTTOM-RIGHT
+    public void Case43_Rotate270_Corner_BottomRight_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case43",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner BOTTOM-RIGHT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r270.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+        [Test]
+    // Rotated page (/Rotate=270): corner placement TOP-LEFT
+    public void Case40_Rotate270_Corner_TopLeft_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case40",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner TOP-LEFT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r270.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // Rotated page (/Rotate=270): corner placement TOP-RIGHT
+    public void Case41_Rotate270_Corner_TopRight_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case41",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner TOP-RIGHT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r270.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // Rotated page (/Rotate=270): corner placement BOTTOM-LEFT
+    public void Case42_Rotate270_Corner_BottomLeft_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case42",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [150,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner BOTTOM-LEFT" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "rot-empty-1p_r270.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
     private static void RunSinglePage(string jsonSpec)
     {
         RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1);
