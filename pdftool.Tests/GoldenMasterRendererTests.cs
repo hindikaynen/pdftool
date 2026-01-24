@@ -288,6 +288,57 @@ public void Case20_ImageRect_PngBase64_Page1()
 }
 
 
+
+
+[Test]
+// Primitive: barcode QR (kind=qr) with ecLevel=H in rect
+public void Case21_BarcodeQr_EcH_Page1()
+{
+    var json = """
+    {
+      "overlays": [
+        {
+          "name": "case21",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
+          "primitives": [
+            { "type": "rect", "rect": [0,0,220,140], "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,116,116], "value": "HELLO-QR-EC-H", "options": { "ecLevel": "H" } },
+            { "type": "text", "at": [140,70], "size": 10, "value": "QR ec=H" }
+          ]
+        }
+      ]
+    }
+    """;
+
+    RunSinglePage(json);
+}
+
+[Test]
+// Primitive: barcode CODE128 in wide rect with showText=false
+public void Case22_BarcodeCode128_NoText_Page1()
+{
+    var json = """
+    {
+      "overlays": [
+        {
+          "name": "case22",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+          "primitives": [
+            { "type": "rect", "rect": [0,0,360,120], "strokeWidth": 1 },
+            { "type": "barcode", "kind": "code128", "rect": [12,44,336,60], "value": "CODE128-1234567890", "options": { "showText": false } },
+            { "type": "text", "at": [12,18], "size": 10, "value": "CODE128 (no text)" }
+          ]
+        }
+      ]
+    }
+    """;
+
+    RunSinglePage(json);
+}
+
+
     private static void RunSinglePage(string jsonSpec)
     {
         var testData = TestPaths.GetTestDataDir();

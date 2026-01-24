@@ -1,3 +1,4 @@
+using System.Text.Json;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -11,6 +12,9 @@ using iText.Layout.Properties;
 using iText.Layout.Renderer;
 using iText.IO.Font.Constants;
 using iText.IO.Image;
+using iText.Barcodes;
+using iText.Barcodes.Qrcode;
+using iText.Kernel.Colors;
 
 namespace PdfTool;
 
@@ -224,6 +228,10 @@ public static class PrimitiveRenderer
                     DrawLine(pdfCanvas, origin, l);
                     break;
 
+                case BarcodePrimitiveSpec bc:
+                    DrawBarcode(pdfCanvas, pdf, origin, bc);
+                    break;
+
                 case ImagePrimitiveSpec img:
                     DrawImage(pdfCanvas, origin, img);
                     break;
@@ -279,10 +287,81 @@ public static class PrimitiveRenderer
         c.Stroke();
     }
 
+    private static void DrawBarcode(PdfCanvas c, PdfDocument pdf, PointD o, BarcodePrimitiveSpec bc)
+    {
+        var x = (float)(o.X + bc.Rect[0]);
+        var y = (float)(o.Y + bc.Rect[1]);
+        var w = (float)bc.Rect[2];
+        var h = (float)bc.Rect[3];
+
+        var target = new Rectangle(x, y, w, h);
+
+        if (bc.Kind == BarcodeKind.qr)
+        {
+            IDictionary<EncodeHintType, object>? hints = null;
+
+            if (bc.Options is not null && bc.Options.Value.ValueKind == JsonValueKind.Object &&
+                bc.Options.Value.TryGetProperty("ecLevel", out var ec) && ec.ValueKind == JsonValueKind.String)
+            {
+                var s = ec.GetString();
+                if (!string.IsNullOrWhiteSpace(s))
+                {
+                    hints = new Dictionary<EncodeHintType, object>();
+                    hints[EncodeHintType.ERROR_CORRECTION] = s switch
+                    {
+                        "L" => ErrorCorrectionLevel.L,
+                        "M" => ErrorCorrectionLevel.M,
+                        "Q" => ErrorCorrectionLevel.Q,
+                        "H" => ErrorCorrectionLevel.H,
+                        _ => ErrorCorrectionLevel.L
+                    };
+                }
+            }
+
+            var qr = hints is null ? new BarcodeQRCode(bc.Value) : new BarcodeQRCode(bc.Value, hints);
+            var xobj = qr.CreateFormXObject(ColorConstants.BLACK, pdf);
+
+            // Fit into target rect (keeps proportions)
+            c.AddXObjectFittedIntoRectangle(xobj, target);
+            return;
+        }
+
+        if (bc.Kind == BarcodeKind.code128)
+        {
+            var b128 = new Barcode128(pdf);
+            b128.SetCodeType(Barcode128.CODE128);
+            b128.SetCode(bc.Value);
+
+            var showText = true;
+            if (bc.Options is not null && bc.Options.Value.ValueKind == JsonValueKind.Object &&
+                bc.Options.Value.TryGetProperty("showText", out var st) &&
+                (st.ValueKind == JsonValueKind.True || st.ValueKind == JsonValueKind.False))
+            {
+                showText = st.GetBoolean();
+            }
+
+            if (!showText)
+            {
+                b128.SetFont(null);
+            }
+            else
+            {
+                // Ensure a font is present for the human-readable line
+                b128.SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA));
+            }
+
+            var xobj = b128.CreateFormXObject(ColorConstants.BLACK, ColorConstants.BLACK, pdf);
+            c.AddXObjectFittedIntoRectangle(xobj, target);
+            return;
+        }
+
+        throw new NotSupportedException($"Unsupported barcode kind: {bc.Kind}");
+    }
+
     private static void DrawImage(PdfCanvas c, PointD o, ImagePrimitiveSpec img)
     {
-        if (string.IsNullOrEmpty(img.Base64))
-            throw new FormatException("Image primitive: data.base64 is required.");
+        if (string.IsNullOrWhiteSpace(img.Base64))
+            throw new FormatException("Image primitive: base64 is required.");
 
         byte[] bytes;
         try
