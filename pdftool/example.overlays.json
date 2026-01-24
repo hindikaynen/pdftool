@@ -1,0 +1,42 @@
+{
+  "overlays": [
+    {
+      "name": "CornerStamp",
+      "pages": "1-last",
+      "placement": {
+        "mode": "corner",
+        "corner": "topRight",
+        "offset": [
+          28.35,
+          34.02
+        ]
+      },
+      "primitives": [
+        {
+          "type": "rect",
+          "rect": [
+            0,
+            0,
+            156,
+            57
+          ],
+          "fill": "#FFFFFF",
+          "stroke": "#333333",
+          "strokeWidth": 0.5,
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "at": [
+            14,
+            17
+          ],
+          "font": "Helvetica",
+          "size": 10,
+          "color": "#111111",
+          "value": "APPROVED"
+        }
+      ]
+    }
+  ]
+}
