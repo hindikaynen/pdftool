@@ -110,6 +110,13 @@ public static class JsonSpecValidator
         // Wrap makes sense for rect; allow but warn-less (we validate only)
         if (t.Wrap == true && !hasRect)
             throw new FormatException($"Overlay '{overlayName}': text.wrap=true requires text.rect");
+
+
+if (t.VAlign is not null && !hasRect)
+    throw new FormatException($"Overlay '{overlayName}': text.valign requires text.rect");
+
+if (t.HAlign is not null && !hasRect)
+    throw new FormatException($"Overlay '{overlayName}': text.halign requires text.rect");
     }
 
     private static void ValidateBarcode(string overlayName, BarcodePrimitiveSpec bc)

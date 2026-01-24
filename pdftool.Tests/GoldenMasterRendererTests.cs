@@ -13,11 +13,16 @@ public class GoldenMasterRendererTests
     // Each test contains its JSON spec inline for maximum readability.
     // Baseline naming:
     // {TestClass}.{TestMethod}.p{Page}.png
-
-    // --- Implemented primitives ---
+    //
+    // Corner placement uses Variant B semantics:
+    // offset is ALWAYS "inward" from the chosen corner and SHOULD be small (<= 200pt):
+    // - topLeft:     [right, down]
+    // - topRight:    [left,  down]
+    // - bottomLeft:  [right, up]
+    // - bottomRight: [left,  up]
 
     [Test]
-    // Primitive: rect (stroke) + text(at)
+    // Primitive: rect (stroke) + text(at) at TOP-LEFT
     public void Case01_RectAndTextAt_Page1()
     {
         RunSinglePage("""
@@ -26,7 +31,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case01",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-120] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,240,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rect + text(at)" }
@@ -38,7 +43,7 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: rect with cornerRadius + text(at)
+    // Primitive: rect with cornerRadius + text(at) at TOP-RIGHT
     public void Case02_RectCornerRadius_Page1()
     {
         RunSinglePage("""
@@ -47,7 +52,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case02",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-200] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "cornerRadius=12" }
@@ -59,7 +64,7 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: text(rect) with wrap=true
+    // Primitive: text(rect) with wrap=true at BOTTOM-LEFT
     public void Case03_TextRect_Wrap_Page1()
     {
         RunSinglePage("""
@@ -68,7 +73,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case03",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-300] },
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
                 {
@@ -86,7 +91,28 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: text(rect) with valign=top
+    // Primitive: line with strokeWidth at BOTTOM-RIGHT
+    public void Case04_Line_StrokeWidth_Page1()
+    {
+        RunSinglePage("""
+          {
+            "overlays": [
+              {
+                "name": "case04",
+                "pages": "1",
+                "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+                "primitives": [
+                  { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
+                  { "type": "text", "at": [0,14], "size": 11, "value": "strokeWidth = 6pt" }
+                ]
+              }
+            ]
+          }
+          """);
+    }
+
+    [Test]
+    // Primitive: text(rect) with valign=top at TOP-LEFT
     public void Case06_TextRect_VAlignTop_Page1()
     {
         RunSinglePage("""
@@ -95,7 +121,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case06",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-420] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,140] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
                 {
@@ -114,7 +140,7 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: text(rect) with valign=middle
+    // Primitive: text(rect) with valign=middle at TOP-RIGHT
     public void Case07_TextRect_VAlignMiddle_Page1()
     {
         RunSinglePage("""
@@ -123,7 +149,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case07",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-560] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [72,140] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
                 {
@@ -142,7 +168,7 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: text(rect) with valign=bottom
+    // Primitive: text(rect) with valign=bottom at BOTTOM-LEFT
     public void Case08_TextRect_VAlignBottom_Page1()
     {
         RunSinglePage("""
@@ -151,7 +177,7 @@ public class GoldenMasterRendererTests
             {
               "name": "case08",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-700] },
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,140] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
                 {
@@ -170,19 +196,19 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: line with strokeWidth
-    public void Case04_Line_StrokeWidth_Page1()
+    // Primitive: text(rect) with halign=left at TOP-LEFT
+    public void Case12_TextRect_HAlignLeft_Page1()
     {
         RunSinglePage("""
         {
           "overlays": [
             {
-              "name": "case04",
+              "name": "case12",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-420] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,200] },
               "primitives": [
-                { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
-                { "type": "text", "at": [0,14], "size": 11, "value": "strokeWidth = 6pt" }
+                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "left", "valign": "middle", "value": "LEFT" }
               ]
             }
           ]
@@ -190,27 +216,41 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    // --- Not implemented yet ---
-
     [Test]
-    [Ignore("Not implemented yet: image primitive renderer.")]
-    // Primitive: image (base64 PNG)
-    public void Case10_Image_PngBase64_Page1()
+    // Primitive: text(rect) with halign=center at TOP-RIGHT
+    public void Case13_TextRect_HAlignCenter_Page1()
     {
-        const string png1x1 =
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PuL9xQAAAABJRU5ErkJggg==";
-
-        RunSinglePage($$"""
+        RunSinglePage("""
         {
           "overlays": [
             {
-              "name": "case10",
+              "name": "case13",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-980] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [72,200] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,200,80], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "image", "rect": [10,10,60,60], "data": { "mime": "image/png", "base64": "{{png1x1}}" } },
-                { "type": "text", "at": [80,30], "size": 11, "value": "PNG base64 image" }
+                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "center", "valign": "middle", "value": "CENTER" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
+    // Primitive: text(rect) with halign=right at BOTTOM-RIGHT
+    public void Case14_TextRect_HAlignRight_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case14",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,140] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "right", "valign": "middle", "value": "RIGHT" }
               ]
             }
           ]

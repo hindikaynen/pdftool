@@ -1,3 +1,4 @@
+using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Annot;
@@ -8,22 +9,12 @@ using iText.Layout.Element;
 using iText.Layout.Layout;
 using iText.Layout.Properties;
 using iText.Layout.Renderer;
+using iText.IO.Font.Constants;
 
 namespace PdfTool;
 
 public static class PdfApplyEngine
 {
-    /// <summary>
-    /// Applies overlays to an already opened PdfDocument (reader+writer).
-    ///
-    /// Policy (fixed):
-    /// - All overlays are rendered as Stamp annotations (Rubber Stamp) with appearance streams.
-    /// - Redaction (textMarker) will be implemented later as a separate content-modification step.
-    ///
-    /// Current iteration supports:
-    /// - placement: corner only
-    /// - primitives: rect(+cornerRadius), line, text(at), text(rect+wrap+valign)
-    /// </summary>
     public static void Apply(PdfDocument pdf, DocumentSpec spec)
     {
         if (pdf is null) throw new ArgumentNullException(nameof(pdf));
@@ -43,16 +34,7 @@ public static class PdfApplyEngine
             foreach (var pageNo in plan.Pages)
             {
                 var page = pdf.GetPage(pageNo);
-                var pageSize = page.GetPageSize();
-
-                var origin = PlacementResolver.ResolveCornerOrigin(
-                    pageWidth: pageSize.GetWidth(),
-                    pageHeight: pageSize.GetHeight(),
-                    corner: plan.Placement.Corner.Value,
-                    offset: plan.Placement.Offset
-                );
-
-                OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, origin, plan.Primitives, plan.Name);
+                OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, plan.Placement, plan.Primitives, plan.Name);
             }
         }
     }
@@ -60,11 +42,24 @@ public static class PdfApplyEngine
 
 internal static class OverlayStampRenderer
 {
-    public static void RenderOverlayAsStamp(PdfDocument pdf, PdfPage page, PointD origin, IReadOnlyList<PrimitiveSpec> primitives, string overlayName)
+    public static void RenderOverlayAsStamp(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName)
     {
-        var bounds = PrimitiveBoundsCalculator.ComputeBounds(primitives);
+        var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
         if (bounds is null)
             return;
+
+        var pageSize = page.GetPageSize();
+
+        var origin = PlacementResolver.ResolveCornerOriginVariantB(
+            pageWidth: pageSize.GetWidth(),
+            pageHeight: pageSize.GetHeight(),
+            corner: placement.Corner!.Value,
+            offset: placement.Offset,
+            overlayMinX: bounds.Value.MinX,
+            overlayMinY: bounds.Value.MinY,
+            overlayMaxX: bounds.Value.MaxX,
+            overlayMaxY: bounds.Value.MaxY
+        );
 
         var rectOnPage = new Rectangle(
             (float)(origin.X + bounds.Value.MinX),
@@ -96,7 +91,7 @@ internal readonly record struct BoundsD(double MinX, double MinY, double MaxX, d
 
 internal static class PrimitiveBoundsCalculator
 {
-    public static BoundsD? ComputeBounds(IReadOnlyList<PrimitiveSpec> primitives)
+    public static BoundsD? ComputeBoundsMeasured(IReadOnlyList<PrimitiveSpec> primitives)
     {
         if (primitives is null || primitives.Count == 0) return null;
 
@@ -129,16 +124,16 @@ internal static class PrimitiveBoundsCalculator
             switch (prim)
             {
                 case RectPrimitiveSpec r:
-                {
                     Include(r.Rect[0], r.Rect[1], r.Rect[0] + r.Rect[2], r.Rect[1] + r.Rect[3]);
                     break;
-                }
+
                 case LinePrimitiveSpec l:
                 {
                     var sw = l.StrokeWidth ?? 1;
                     Include(l.From[0] - sw / 2, l.From[1] - sw / 2, l.To[0] + sw / 2, l.To[1] + sw / 2);
                     break;
                 }
+
                 case TextPrimitiveSpec t:
                 {
                     if (t.Rect is not null)
@@ -147,8 +142,11 @@ internal static class PrimitiveBoundsCalculator
                     }
                     else if (t.At is not null)
                     {
-                        var fontSize = t.Size ?? 12;
-                        Include(t.At[0], t.At[1], t.At[0] + 1000, t.At[1] + fontSize * 1.2);
+                        var fontSize = (float)(t.Size ?? 12);
+                        var w = MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
+                        var h = Math.Max(1f, fontSize * 1.2f);
+
+                        Include(t.At[0], t.At[1], t.At[0] + w, t.At[1] + h);
                     }
                     break;
                 }
@@ -157,13 +155,46 @@ internal static class PrimitiveBoundsCalculator
 
         if (!hasAny) return null;
 
-        var width = maxX - minX;
-        var height = maxY - minY;
-        if (width <= 0) { maxX = minX + 1; }
-        if (height <= 0) { maxY = minY + 1; }
+        if (maxX - minX <= 0) maxX = minX + 1;
+        if (maxY - minY <= 0) maxY = minY + 1;
 
         return new BoundsD(minX, minY, maxX, maxY);
     }
+
+    internal static float MeasurePointTextWidth(string text, float fontSize)
+    {
+        // Using a standard built-in font for measurement.
+        // This matches the default font iText uses when none is explicitly set.
+        var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+        // PdfFont.GetWidth returns width in glyph units; overload with fontSize yields width in points.
+        var w = font.GetWidth(text, fontSize);
+
+        // Safety: avoid zero width (empty text) producing degenerate bounds.
+        return Math.Max(1f, w);
+    }
+
+internal static float MeasureIntrinsicTextWidth(string text, float fontSize)
+{
+    // Measures the widest line (split by \n) using a standard built-in font.
+    // Used to implement text.rect.halign as a BLOCK alignment (not text alignment inside the block).
+    var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+    if (string.IsNullOrEmpty(text))
+        return 1f;
+
+    var normalized = text.Replace("\r\n", "\n").Replace("\r", "\n");
+    var max = 1f;
+
+    foreach (var line in normalized.Split('\n'))
+    {
+        var w = font.GetWidth(line, fontSize);
+        if (w > max) max = w;
+    }
+
+    return Math.Max(1f, max);
+}
+
 }
 
 public static class PrimitiveRenderer
@@ -238,24 +269,26 @@ public static class PrimitiveRenderer
 
     private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t)
     {
-        // Point text
         if (t.At is not null)
         {
             var x = (float)(o.X + t.At[0]);
             var y = (float)(o.Y + t.At[1]);
 
-            var p = new Paragraph(t.Value);
+            var p = new Paragraph(t.Value ?? string.Empty);
+            p.SetMargin(0);
+            p.SetPadding(0);
 
-            if (t.Size is not null)
-                p.SetFontSize((float)t.Size.Value);
+            var fontSize = (float)(t.Size ?? 12);
+            p.SetFontSize(fontSize);
 
-            p.SetFixedPosition(x, y, 1000);
+            // IMPORTANT: do not use large constant width here — it breaks bounds/anchoring for topRight.
+            var w = PrimitiveBoundsCalculator.MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
+            p.SetFixedPosition(x, y, w);
 
             canvas.Add(p);
             return;
         }
 
-        // Block text
         if (t.Rect is not null)
         {
             var x = (float)(o.X + t.Rect[0]);
@@ -263,7 +296,7 @@ public static class PrimitiveRenderer
             var w = (float)t.Rect[2];
             var h = (float)t.Rect[3];
 
-            var p = new Paragraph(t.Value);
+            var p = new Paragraph(t.Value ?? string.Empty);
 
             if (t.Size is not null)
                 p.SetFontSize((float)t.Size.Value);
@@ -281,43 +314,60 @@ public static class PrimitiveRenderer
                 p.SetTextAlignment(align);
             }
 
-            // Vertical alignment: default TOP.
-            var valign = t.VAlign ?? VerticalAlign.top;
+            // Measure height with layout engine. For block width:
+// - wrap=true  => block spans the whole rect width (halign becomes a no-op, as expected)
+// - wrap=false => block width is the intrinsic text width (clamped to rect width), so halign can shift it.
+var wrap = t.Wrap ?? false;
 
-            // Measure paragraph height for the given width.
-            var paraHeight = MeasureParagraphHeight(canvas, p, w);
+var blockWidth = w;
+if (!wrap)
+{
+    var fs = (float)(t.Size ?? 12);
+    blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value ?? string.Empty, fs));
+}
 
-            var yStart = valign switch
-            {
-                VerticalAlign.bottom => y,
-                VerticalAlign.middle => y + (h - paraHeight) / 2f,
-                _ => y + (h - paraHeight) // top
-            };
+var metrics = MeasureParagraph(canvas, p, blockWidth);
 
-            // Clip to the target rectangle, so overflow doesn't escape.
-            var pdfCanvas = canvas.GetPdfCanvas();
-            pdfCanvas.SaveState();
-            pdfCanvas.Rectangle(x, y, w, h);
-            pdfCanvas.Clip();
-            pdfCanvas.EndPath();
+var valign = t.VAlign ?? VerticalAlign.top;
+var yStart = valign switch
+{
+    VerticalAlign.bottom => y,
+    VerticalAlign.middle => y + (h - metrics.Height) / 2f,
+    _ => y + (h - metrics.Height)
+};
 
-            // Lay out the paragraph in its own area (height = measured), positioned according to valign.
-            var layoutArea = new Rectangle(x, yStart, w, Math.Max(paraHeight, 1));
-            using (var blockCanvas = new Canvas(pdfCanvas, layoutArea))
-            {
-                blockCanvas.Add(p);
-            }
+var halign = t.HAlign ?? HorizontalAlign.left;
+var dx = Math.Max(0, w - blockWidth);
+var xStart = halign switch
+{
+    HorizontalAlign.center => x + dx / 2f,
+    HorizontalAlign.right => x + dx,
+    _ => x
+};
 
-            pdfCanvas.RestoreState();
-            return;
+var pdfCanvas = canvas.GetPdfCanvas();
+pdfCanvas.SaveState();
+pdfCanvas.Rectangle(x, y, w, h);
+pdfCanvas.Clip();
+pdfCanvas.EndPath();
+
+var layoutArea = new Rectangle(xStart, yStart, Math.Max(blockWidth, 1), Math.Max(metrics.Height, 1));
+using (var blockCanvas = new Canvas(pdfCanvas, layoutArea))
+{
+    blockCanvas.Add(p);
+}
+
+pdfCanvas.RestoreState();
+return;
         }
 
         throw new InvalidOperationException("Text primitive must have either 'at' or 'rect'.");
     }
 
-    private static float MeasureParagraphHeight(Canvas canvas, Paragraph p, float width)
+    private readonly record struct ParagraphMetrics(float Width, float Height);
+
+    private static ParagraphMetrics MeasureParagraph(Canvas canvas, Paragraph p, float width)
     {
-        // Measure the occupied height of the paragraph when wrapped to the given width.
         var hugeHeight = 10_000f;
         var measureRect = new Rectangle(0, 0, width, hugeHeight);
 
@@ -329,8 +379,11 @@ public static class PrimitiveRenderer
         var result = renderer.Layout(new LayoutContext(new LayoutArea(1, measureRect)));
 
         if (result.GetStatus() != LayoutResult.FULL)
-            return hugeHeight;
+            return new ParagraphMetrics(width, hugeHeight);
 
-        return result.GetOccupiedArea().GetBBox().GetHeight();
+        var bbox = result.GetOccupiedArea().GetBBox();
+        var wOcc = Math.Min(width, Math.Max(1, bbox.GetWidth()));
+        var hOcc = Math.Max(1, bbox.GetHeight());
+        return new ParagraphMetrics(wOcc, hOcc);
     }
 }

@@ -77,6 +77,9 @@ public abstract class PrimitiveSpec
 public enum TextAlign { left, center, right, justify }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
+public enum HorizontalAlign { left, center, right }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum VerticalAlign { top, middle, bottom }
 
 public sealed class TextPrimitiveSpec : PrimitiveSpec
@@ -99,6 +102,9 @@ public sealed class TextPrimitiveSpec : PrimitiveSpec
 
     [JsonPropertyName("valign")]
     public VerticalAlign? VAlign { get; init; }
+
+    [JsonPropertyName("halign")]
+    public HorizontalAlign? HAlign { get; init; }
 
     [JsonPropertyName("font")]
     public string? Font { get; init; }
