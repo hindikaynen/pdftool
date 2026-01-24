@@ -35,9 +35,6 @@ public enum PageCorner { topLeft, topRight, bottomLeft, bottomRight }
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MarkerOccurrence { first, last, all }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum MarkerAlign { bottomLeft, bottomRight, topLeft, topRight, center }
-
 public sealed class PlacementSpec
 {
     [JsonPropertyName("mode")]
@@ -53,9 +50,6 @@ public sealed class PlacementSpec
 
     [JsonPropertyName("occurrence")]
     public MarkerOccurrence Occurrence { get; init; } = MarkerOccurrence.first;
-
-    [JsonPropertyName("align")]
-    public MarkerAlign Align { get; init; } = MarkerAlign.bottomLeft;
 
     // Common offset [dx, dy] in pt
     [JsonPropertyName("offset")]
