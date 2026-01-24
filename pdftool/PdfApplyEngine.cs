@@ -128,28 +128,28 @@ internal static class PrimitiveBoundsCalculator
                     break;
 
                 case LinePrimitiveSpec l:
-                {
-                    var sw = l.StrokeWidth ?? 1;
-                    Include(l.From[0] - sw / 2, l.From[1] - sw / 2, l.To[0] + sw / 2, l.To[1] + sw / 2);
-                    break;
-                }
+                    {
+                        var sw = l.StrokeWidth ?? 1;
+                        Include(l.From[0] - sw / 2, l.From[1] - sw / 2, l.To[0] + sw / 2, l.To[1] + sw / 2);
+                        break;
+                    }
 
                 case TextPrimitiveSpec t:
-                {
-                    if (t.Rect is not null)
                     {
-                        Include(t.Rect[0], t.Rect[1], t.Rect[0] + t.Rect[2], t.Rect[1] + t.Rect[3]);
-                    }
-                    else if (t.At is not null)
-                    {
-                        var fontSize = (float)(t.Size ?? 12);
-                        var w = MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
-                        var h = Math.Max(1f, fontSize * 1.2f);
+                        if (t.Rect is not null)
+                        {
+                            Include(t.Rect[0], t.Rect[1], t.Rect[0] + t.Rect[2], t.Rect[1] + t.Rect[3]);
+                        }
+                        else if (t.At is not null)
+                        {
+                            var fontSize = (float)(t.Size ?? 12);
+                            var w = MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
+                            var h = Math.Max(1f, fontSize * 1.2f);
 
-                        Include(t.At[0], t.At[1], t.At[0] + w, t.At[1] + h);
+                            Include(t.At[0], t.At[1], t.At[0] + w, t.At[1] + h);
+                        }
+                        break;
                     }
-                    break;
-                }
             }
         }
 
@@ -174,26 +174,26 @@ internal static class PrimitiveBoundsCalculator
         return Math.Max(1f, w);
     }
 
-internal static float MeasureIntrinsicTextWidth(string text, float fontSize)
-{
-    // Measures the widest line (split by \n) using a standard built-in font.
-    // Used to implement text.rect.halign as a BLOCK alignment (not text alignment inside the block).
-    var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-
-    if (string.IsNullOrEmpty(text))
-        return 1f;
-
-    var normalized = text.Replace("\r\n", "\n").Replace("\r", "\n");
-    var max = 1f;
-
-    foreach (var line in normalized.Split('\n'))
+    internal static float MeasureIntrinsicTextWidth(string text, float fontSize)
     {
-        var w = font.GetWidth(line, fontSize);
-        if (w > max) max = w;
-    }
+        // Measures the widest line (split by \n) using a standard built-in font.
+        // Used to implement text.rect.halign as a BLOCK alignment (not text alignment inside the block).
+        var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
 
-    return Math.Max(1f, max);
-}
+        if (string.IsNullOrEmpty(text))
+            return 1f;
+
+        var normalized = text.Replace("\r\n", "\n").Replace("\r", "\n");
+        var max = 1f;
+
+        foreach (var line in normalized.Split('\n'))
+        {
+            var w = font.GetWidth(line, fontSize);
+            if (w > max) max = w;
+        }
+
+        return Math.Max(1f, max);
+    }
 
 }
 
@@ -315,50 +315,50 @@ public static class PrimitiveRenderer
             }
 
             // Measure height with layout engine. For block width:
-// - wrap=true  => block spans the whole rect width (halign becomes a no-op, as expected)
-// - wrap=false => block width is the intrinsic text width (clamped to rect width), so halign can shift it.
-var wrap = t.Wrap ?? false;
+            // - wrap=true  => block spans the whole rect width (halign becomes a no-op, as expected)
+            // - wrap=false => block width is the intrinsic text width (clamped to rect width), so halign can shift it.
+            var wrap = t.Wrap ?? false;
 
-var blockWidth = w;
-if (!wrap)
-{
-    var fs = (float)(t.Size ?? 12);
-    blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value ?? string.Empty, fs));
-}
+            var blockWidth = w;
+            if (!wrap)
+            {
+                var fs = (float)(t.Size ?? 12);
+                blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value ?? string.Empty, fs));
+            }
 
-var metrics = MeasureParagraph(canvas, p, blockWidth);
+            var metrics = MeasureParagraph(canvas, p, blockWidth);
 
-var valign = t.VAlign ?? VerticalAlign.top;
-var yStart = valign switch
-{
-    VerticalAlign.bottom => y,
-    VerticalAlign.middle => y + (h - metrics.Height) / 2f,
-    _ => y + (h - metrics.Height)
-};
+            var valign = t.VAlign ?? VerticalAlign.top;
+            var yStart = valign switch
+            {
+                VerticalAlign.bottom => y,
+                VerticalAlign.middle => y + (h - metrics.Height) / 2f,
+                _ => y + (h - metrics.Height)
+            };
 
-var halign = t.HAlign ?? HorizontalAlign.left;
-var dx = Math.Max(0, w - blockWidth);
-var xStart = halign switch
-{
-    HorizontalAlign.center => x + dx / 2f,
-    HorizontalAlign.right => x + dx,
-    _ => x
-};
+            var halign = t.HAlign ?? HorizontalAlign.left;
+            var dx = Math.Max(0, w - blockWidth);
+            var xStart = halign switch
+            {
+                HorizontalAlign.center => x + dx / 2f,
+                HorizontalAlign.right => x + dx,
+                _ => x
+            };
 
-var pdfCanvas = canvas.GetPdfCanvas();
-pdfCanvas.SaveState();
-pdfCanvas.Rectangle(x, y, w, h);
-pdfCanvas.Clip();
-pdfCanvas.EndPath();
+            var pdfCanvas = canvas.GetPdfCanvas();
+            pdfCanvas.SaveState();
+            pdfCanvas.Rectangle(x, y, w, h);
+            pdfCanvas.Clip();
+            pdfCanvas.EndPath();
 
-var layoutArea = new Rectangle(xStart, yStart, Math.Max(blockWidth, 1), Math.Max(metrics.Height, 1));
-using (var blockCanvas = new Canvas(pdfCanvas, layoutArea))
-{
-    blockCanvas.Add(p);
-}
+            var layoutArea = new Rectangle(xStart, yStart, Math.Max(blockWidth, 1), Math.Max(metrics.Height, 1));
+            using (var blockCanvas = new Canvas(pdfCanvas, layoutArea))
+            {
+                blockCanvas.Add(p);
+            }
 
-pdfCanvas.RestoreState();
-return;
+            pdfCanvas.RestoreState();
+            return;
         }
 
         throw new InvalidOperationException("Text primitive must have either 'at' or 'rect'.");
