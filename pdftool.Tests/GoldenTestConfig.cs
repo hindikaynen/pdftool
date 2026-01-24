@@ -1,4 +1,4 @@
-//#define UPDATE_BASELINES
+#define UPDATE_BASELINES
 namespace PdfTool.Tests;
 
 public static class GoldenTestConfig
