@@ -1,0 +1,37 @@
+{
+  "overlays": [
+    {
+      "name": "case01",
+      "pages": "1",
+      "placement": {
+        "mode": "corner",
+        "corner": "topLeft",
+        "offset": [
+          72,
+          -72
+        ]
+      },
+      "primitives": [
+        {
+          "type": "rect",
+          "rect": [
+            0,
+            0,
+            200,
+            60
+          ],
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "at": [
+            10,
+            20
+          ],
+          "size": 14,
+          "value": "HELLO"
+        }
+      ]
+    }
+  ]
+}

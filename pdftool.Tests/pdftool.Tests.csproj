@@ -9,9 +9,16 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="PDFtoImage" Version="5.2.0" />  <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
   </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\pdftool\pdftool.csproj" />
   </ItemGroup>
+
+<ItemGroup>
+  <None Include="TestData\**\*" CopyToOutputDirectory="PreserveNewest" />
+</ItemGroup>
+
 </Project>

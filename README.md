@@ -25,3 +25,16 @@ dotnet test pdftool.sln
 ```bash
 dotnet run --project pdftool -- apply --in input.pdf --out output.pdf --json overlays.json
 ```
+
+
+## PlacementResolver (corner)
+- Coordinates are in PDF user space (origin bottom-left).
+- Corner origin is (0,0)/(w,0)/(0,h)/(w,h) plus offset [dx,dy].
+  - Example: topLeft with offset [10,-20] means 10pt right and 20pt down.
+
+## Golden master renderer tests (Phase 1)
+- Tests rasterize output PDF pages to PNG using PDFiumSharp and compare against baselines in `pdftool.Tests/TestData/expected`.
+- To generate / update baselines:
+  - edit `pdftool.Tests/GoldenTestConfig.cs` and enable `#define UPDATE_BASELINES`
+  - run `dotnet test`
+  - review generated/updated PNGs in `TestData/expected` and commit them
