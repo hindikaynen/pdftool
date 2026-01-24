@@ -217,6 +217,69 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
+    // placement=textAnchor: redact marker + place overlay at the marker's top-left (with offset)
+    public void Case30_TextAnchor_RedactAndOverlay_Page1()
+    {
+        RunOnePageFromInput("""
+        {
+          "overlays": [
+            {
+              "name": "case30",
+              "pages": "1",
+              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_ONE>>", "occurrence": "first" },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,240,50], "strokeWidth": 1 },
+                { "type": "text", "at": [12,18], "size": 12, "value": "textAnchor + redaction" }
+              ]
+            }
+          ]
+        }
+        """, inputPdfFileName: "textanchor-2p.pdf", pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // placement=textAnchor: occurrence=last on page 2 (two markers present)
+    public void Case31_TextAnchor_OccurrenceLast_Page2()
+    {
+        RunOnePageFromInput("""
+        {
+          "overlays": [
+            {
+              "name": "case31",
+              "pages": "2",
+              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "last" },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,200,45], "strokeWidth": 1 },
+                { "type": "text", "at": [12,16], "size": 12, "value": "occurrence=last" }
+              ]
+            }
+          ]
+        }
+        """, inputPdfFileName: "textanchor-2p.pdf", pageNumber1BasedToRender: 2);
+    }
+
+    [Test]
+    // placement=textAnchor: occurrence=all on page 2 (two markers present -> two overlays)
+    public void Case32_TextAnchor_OccurrenceAll_Page2()
+    {
+        RunOnePageFromInput("""
+        {
+          "overlays": [
+            {
+              "name": "case32",
+              "pages": "2",
+              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "all" },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,180,40], "strokeWidth": 1 },
+                { "type": "text", "at": [12,14], "size": 12, "value": "occurrence=all" }
+              ]
+            }
+          ]
+        }
+        """, inputPdfFileName: "textanchor-2p.pdf", pageNumber1BasedToRender: 2);
+    }
+
+    [Test]
     // Primitive: text(rect) with halign=center at TOP-RIGHT
     public void Case13_TextRect_HAlignCenter_Page1()
     {
@@ -497,8 +560,13 @@ public void Case26_Code128_NoText_Wide_Page1()
 
     private static void RunSinglePage(string jsonSpec)
     {
+        RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1);
+    }
+
+    private static void RunOnePageFromInput(string jsonSpec, string inputPdfFileName, int pageNumber1BasedToRender)
+    {
         var testData = TestPaths.GetTestDataDir();
-        var inputPdf = Path.Combine(testData, "input", "empty-10p.pdf");
+        var inputPdf = Path.Combine(testData, "input", inputPdfFileName);
 
         var workDir = TestContext.CurrentContext.WorkDirectory;
         var actualDir = Path.Combine(workDir, "pdftool_test_artifacts", "actual");
@@ -520,10 +588,10 @@ public void Case26_Code128_NoText_Wide_Page1()
             PdfApplyEngine.Apply(pdf, spec);
         }
 
-        var actualPng = Path.Combine(actualDir, $"{testId}.p1.png");
-        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: 1, dpi: 144, pngPath: actualPng);
+        var actualPng = Path.Combine(actualDir, $"{testId}.p{pageNumber1BasedToRender}.png");
+        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: pageNumber1BasedToRender, dpi: 144, pngPath: actualPng);
 
-        var expectedPng = Path.Combine(expectedDir, $"{testId}.p1.png");
+        var expectedPng = Path.Combine(expectedDir, $"{testId}.p{pageNumber1BasedToRender}.png");
 
         if (!File.Exists(expectedPng))
         {

@@ -9,12 +9,12 @@ using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Layout;
 using iText.Layout.Properties;
-using iText.Layout.Renderer;
 using iText.IO.Font.Constants;
 using iText.IO.Image;
 using iText.Barcodes;
 using iText.Barcodes.Qrcode;
 using iText.Kernel.Colors;
+using iText.PdfCleanup;
 
 namespace PdfTool;
 
@@ -28,21 +28,108 @@ public static class PdfApplyEngine
         var totalPages = pdf.GetNumberOfPages();
         var plans = WorkPlanBuilder.Build(spec, totalPages);
 
+        // First pass: redaction for marker-based overlays.
+        // IMPORTANT: apply redaction before placing any overlay annotations.
+        var anchorPlacements = new List<AnchorPlacement>();
+        var hasRedactions = false;
+
         foreach (var plan in plans)
         {
-            if (plan.Placement.Mode != PlacementMode.corner)
-                throw new NotSupportedException("Only placement.mode='corner' is implemented in this iteration.");
-
-            if (plan.Placement.Corner is null)
-                throw new FormatException($"Overlay '{plan.Name}': placement.corner is required.");
+            if (plan.Placement.Mode != PlacementMode.textAnchor)
+                continue;
 
             foreach (var pageNo in plan.Pages)
             {
                 var page = pdf.GetPage(pageNo);
-                OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, plan.Placement, plan.Primitives, plan.Name);
+
+                var matches = TextAnchorSearcher.FindMatches(page, plan.Placement.SearchText!);
+                var selected = SelectMatches(matches, plan.Placement.Occurrence);
+
+                if (selected.Count == 0)
+                    throw new FormatException($"Overlay '{plan.Name}': marker text '{plan.Placement.SearchText}' was not found on page {pageNo}.");
+
+                foreach (var m in selected)
+                {
+                    // Redaction (as modification): remove the prepared marker text.
+                    var redact = new PdfRedactAnnotation(m.BoundingBox);
+                    redact.SetInteriorColor([1f, 1f, 1f]);
+                    redact.SetColor(ColorConstants.WHITE);
+                    redact.SetFlag(PdfAnnotation.PRINT);
+                    page.AddAnnotation(redact);
+                    hasRedactions = true;
+
+                    anchorPlacements.Add(new AnchorPlacement(
+                        OverlayName: plan.Name,
+                        PageNo: pageNo,
+                        Placement: plan.Placement,
+                        Primitives: plan.Primitives,
+                        AnchorTopLeft: m.AnchorTopLeft
+                    ));
+                }
             }
         }
+
+        if (hasRedactions)
+        {
+            // Apply redaction annotations.
+            PdfCleaner.CleanUpRedactAnnotations(pdf);
+        }
+
+        foreach (var plan in plans)
+        {
+            if (plan.Placement.Mode == PlacementMode.corner)
+            {
+                if (plan.Placement.Corner is null)
+                    throw new FormatException($"Overlay '{plan.Name}': placement.corner is required.");
+
+                foreach (var pageNo in plan.Pages)
+                {
+                    var page = pdf.GetPage(pageNo);
+                    OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, plan.Placement, plan.Primitives, plan.Name);
+                }
+
+                continue;
+            }
+
+            if (plan.Placement.Mode == PlacementMode.textAnchor)
+            {
+                // Use the anchor points computed before redaction cleanup.
+                foreach (var ap in anchorPlacements)
+                {
+                    if (!string.Equals(ap.OverlayName, plan.Name, StringComparison.Ordinal))
+                        continue;
+                    var page = pdf.GetPage(ap.PageNo);
+                    OverlayStampRenderer.RenderOverlayAsStampAtTextAnchor(pdf, page, ap.Placement, ap.Primitives, ap.OverlayName, ap.AnchorTopLeft);
+                }
+
+                continue;
+            }
+
+            throw new NotSupportedException($"placement.mode='{plan.Placement.Mode}' is not supported.");
+        }
     }
+
+    private static IReadOnlyList<TextAnchorMatch> SelectMatches(IReadOnlyList<TextAnchorMatch> matches, MarkerOccurrence occurrence)
+    {
+        if (matches.Count == 0)
+            return [];
+
+        return occurrence switch
+        {
+            MarkerOccurrence.first => [matches[0]],
+            MarkerOccurrence.last => [matches[^1]],
+            MarkerOccurrence.all => matches,
+            _ => throw new ArgumentOutOfRangeException(nameof(occurrence))
+        };
+    }
+
+    private readonly record struct AnchorPlacement(
+        string OverlayName,
+        int PageNo,
+        PlacementSpec Placement,
+        IReadOnlyList<PrimitiveSpec> Primitives,
+        PointD AnchorTopLeft
+    );
 }
 
 internal static class OverlayStampRenderer
@@ -86,6 +173,63 @@ internal static class OverlayStampRenderer
 
         page.AddAnnotation(annot);
     }
+
+    /// <summary>
+    /// Places overlay as a stamp annotation anchored to the top-left point of found marker text.
+    /// Offset semantics for placement.offset: [dx,dy] where dx is to the right, dy is down (both in pt).
+    /// </summary>
+    public static void RenderOverlayAsStampAtTextAnchor(
+        PdfDocument pdf,
+        PdfPage page,
+        PlacementSpec placement,
+        IReadOnlyList<PrimitiveSpec> primitives,
+        string overlayName,
+        PointD anchorTopLeft)
+    {
+        var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
+        if (bounds is null)
+            return;
+
+        var dx = 0d;
+        var dy = 0d;
+        if (placement.Offset is not null)
+        {
+            if (placement.Offset.Length != 2)
+                throw new ArgumentException("offset must be [dx,dy]", nameof(placement));
+            dx = placement.Offset[0];
+            dy = placement.Offset[1];
+        }
+
+        var targetX = anchorTopLeft.X + dx;
+        var targetY = anchorTopLeft.Y - dy; // down
+
+        // Align overlay's top-left (in overlay-local bounds) to the target point.
+        // origin + (overlayMinX, overlayMaxY) = (targetX, targetY)
+        var origin = new PointD(
+            targetX - bounds.Value.MinX,
+            targetY - bounds.Value.MaxY
+        );
+
+        var rectOnPage = new Rectangle(
+            (float)(origin.X + bounds.Value.MinX),
+            (float)(origin.Y + bounds.Value.MinY),
+            (float)bounds.Value.Width,
+            (float)bounds.Value.Height
+        );
+
+        var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
+        var xobj = new PdfFormXObject(appearanceBox);
+
+        var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
+        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives);
+
+        var annot = new PdfStampAnnotation(rectOnPage);
+        annot.SetContents($"pdftool overlay: {overlayName}");
+        annot.SetFlag(PdfAnnotation.PRINT);
+        annot.SetNormalAppearance(xobj.GetPdfObject());
+
+        page.AddAnnotation(annot);
+    }
 }
 
 internal readonly record struct BoundsD(double MinX, double MinY, double MaxX, double MaxY)
@@ -98,7 +242,8 @@ internal static class PrimitiveBoundsCalculator
 {
     public static BoundsD? ComputeBoundsMeasured(IReadOnlyList<PrimitiveSpec> primitives)
     {
-        if (primitives is null || primitives.Count == 0) return null;
+        if (primitives.Count == 0) 
+            return null;
 
         var hasAny = false;
         double minX = 0, minY = 0, maxX = 0, maxY = 0;
@@ -160,7 +305,7 @@ internal static class PrimitiveBoundsCalculator
                         else if (t.At is not null)
                         {
                             var fontSize = (float)(t.Size ?? 12);
-                            var w = MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
+                            var w = MeasurePointTextWidth(t.Value, fontSize);
                             var h = Math.Max(1f, fontSize * 1.2f);
 
                             Include(t.At[0], t.At[1], t.At[0] + w, t.At[1] + h);
@@ -345,15 +490,8 @@ public static class PrimitiveRenderer
                 showText = st.GetBoolean();
             }
 
-            if (!showText)
-            {
-                b128.SetFont(null);
-            }
-            else
-            {
-                // Ensure a font is present for the human-readable line
-                b128.SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA));
-            }
+            // Ensure a font is present for the human-readable line
+            b128.SetFont(!showText ? null : PdfFontFactory.CreateFont(StandardFonts.HELVETICA));
 
             var xobj = b128.CreateFormXObject(ColorConstants.BLACK, ColorConstants.BLACK, pdf);
             c.AddXObjectFittedIntoRectangle(xobj, target);
@@ -388,19 +526,13 @@ public static class PrimitiveRenderer
             throw new FormatException("Image primitive: failed to decode image bytes.", ex);
         }
 
-        if (img.Rect is not null)
-        {
-            var x = (float)(o.X + img.Rect[0]);
-            var y = (float)(o.Y + img.Rect[1]);
-            var w = (float)img.Rect[2];
-            var h = (float)img.Rect[3];
+        var x = (float)(o.X + img.Rect[0]);
+        var y = (float)(o.Y + img.Rect[1]);
+        var w = (float)img.Rect[2];
+        var h = (float)img.Rect[3];
 
-            var r = new Rectangle(x, y, w, h);
-            c.AddImageFittedIntoRectangle(data, r, true);
-            return;
-        }
-
-        throw new InvalidOperationException("Image primitive must have 'rect'.");
+        var r = new Rectangle(x, y, w, h);
+        c.AddImageFittedIntoRectangle(data, r, true);
     }
 
     private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t)
@@ -410,7 +542,7 @@ public static class PrimitiveRenderer
             var x = (float)(o.X + t.At[0]);
             var y = (float)(o.Y + t.At[1]);
 
-            var p = new Paragraph(t.Value ?? string.Empty);
+            var p = new Paragraph(t.Value);
             p.SetMargin(0);
             p.SetPadding(0);
 
@@ -418,7 +550,7 @@ public static class PrimitiveRenderer
             p.SetFontSize(fontSize);
 
             // IMPORTANT: do not use large constant width here — it breaks bounds/anchoring for topRight.
-            var w = PrimitiveBoundsCalculator.MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
+            var w = PrimitiveBoundsCalculator.MeasurePointTextWidth(t.Value, fontSize);
             p.SetFixedPosition(x, y, w);
 
             canvas.Add(p);
@@ -432,7 +564,7 @@ public static class PrimitiveRenderer
             var w = (float)t.Rect[2];
             var h = (float)t.Rect[3];
 
-            var p = new Paragraph(t.Value ?? string.Empty);
+            var p = new Paragraph(t.Value);
 
             if (t.Size is not null)
                 p.SetFontSize((float)t.Size.Value);
@@ -459,7 +591,7 @@ public static class PrimitiveRenderer
             if (!wrap)
             {
                 var fs = (float)(t.Size ?? 12);
-                blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value ?? string.Empty, fs));
+                blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value, fs));
             }
 
             var metrics = MeasureParagraph(canvas, p, blockWidth);
@@ -500,26 +632,25 @@ public static class PrimitiveRenderer
         throw new InvalidOperationException("Text primitive must have either 'at' or 'rect'.");
     }
 
-    private readonly record struct ParagraphMetrics(float Width, float Height);
+    private readonly record struct ParagraphMetrics(float Height);
 
     private static ParagraphMetrics MeasureParagraph(Canvas canvas, Paragraph p, float width)
     {
-        var hugeHeight = 10_000f;
+        const float hugeHeight = 10_000f;
         var measureRect = new Rectangle(0, 0, width, hugeHeight);
 
         using var measureCanvas = new Canvas(canvas.GetPdfCanvas(), measureRect);
 
-        IRenderer renderer = p.CreateRendererSubTree();
+        var renderer = p.CreateRendererSubTree();
         renderer.SetParent(measureCanvas.GetRenderer());
 
         var result = renderer.Layout(new LayoutContext(new LayoutArea(1, measureRect)));
 
         if (result.GetStatus() != LayoutResult.FULL)
-            return new ParagraphMetrics(width, hugeHeight);
+            return new ParagraphMetrics(hugeHeight);
 
         var bbox = result.GetOccupiedArea().GetBBox();
-        var wOcc = Math.Min(width, Math.Max(1, bbox.GetWidth()));
         var hOcc = Math.Max(1, bbox.GetHeight());
-        return new ParagraphMetrics(wOcc, hOcc);
+        return new ParagraphMetrics(hOcc);
     }
 }
