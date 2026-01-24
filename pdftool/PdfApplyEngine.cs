@@ -10,6 +10,7 @@ using iText.Layout.Layout;
 using iText.Layout.Properties;
 using iText.Layout.Renderer;
 using iText.IO.Font.Constants;
+using iText.IO.Image;
 
 namespace PdfTool;
 
@@ -134,6 +135,13 @@ internal static class PrimitiveBoundsCalculator
                         break;
                     }
 
+                case ImagePrimitiveSpec img:
+                    {
+                        // Image primitive currently supports only rect: [x,y,w,h]
+                        Include(img.Rect[0], img.Rect[1], img.Rect[0] + img.Rect[2], img.Rect[1] + img.Rect[3]);
+                        break;
+                    }
+
                 case TextPrimitiveSpec t:
                     {
                         if (t.Rect is not null)
@@ -216,6 +224,10 @@ public static class PrimitiveRenderer
                     DrawLine(pdfCanvas, origin, l);
                     break;
 
+                case ImagePrimitiveSpec img:
+                    DrawImage(pdfCanvas, origin, img);
+                    break;
+
                 case TextPrimitiveSpec t:
                     DrawText(canvas, origin, t);
                     break;
@@ -267,6 +279,46 @@ public static class PrimitiveRenderer
         c.Stroke();
     }
 
+    private static void DrawImage(PdfCanvas c, PointD o, ImagePrimitiveSpec img)
+    {
+        if (img.Data is null || string.IsNullOrWhiteSpace(img.Data.Base64))
+            throw new FormatException("Image primitive: data.base64 is required.");
+
+        byte[] bytes;
+        try
+        {
+            bytes = Convert.FromBase64String(img.Data.Base64);
+        }
+        catch (Exception ex)
+        {
+            throw new FormatException("Image primitive: data.base64 is not valid base64.", ex);
+        }
+
+        ImageData data;
+        try
+        {
+            data = ImageDataFactory.Create(bytes);
+        }
+        catch (Exception ex)
+        {
+            throw new FormatException("Image primitive: failed to decode image bytes.", ex);
+        }
+
+        if (img.Rect is not null)
+        {
+            var x = (float)(o.X + img.Rect[0]);
+            var y = (float)(o.Y + img.Rect[1]);
+            var w = (float)img.Rect[2];
+            var h = (float)img.Rect[3];
+
+            var r = new Rectangle(x, y, w, h);
+            c.AddImageFittedIntoRectangle(data, r, true);
+            return;
+        }
+
+        throw new InvalidOperationException("Image primitive must have 'rect'.");
+    }
+
     private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t)
     {
         if (t.At is not null)
@@ -281,7 +333,7 @@ public static class PrimitiveRenderer
             var fontSize = (float)(t.Size ?? 12);
             p.SetFontSize(fontSize);
 
-            // IMPORTANT: do not use large constant width here — it breaks bounds/anchoring for topRight.
+            // IMPORTANT: do not use large constant width here â€” it breaks bounds/anchoring for topRight.
             var w = PrimitiveBoundsCalculator.MeasurePointTextWidth(t.Value ?? string.Empty, fontSize);
             p.SetFixedPosition(x, y, w);
 

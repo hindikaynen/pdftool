@@ -91,27 +91,6 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // Primitive: line with strokeWidth at BOTTOM-RIGHT
-    public void Case04_Line_StrokeWidth_Page1()
-    {
-        RunSinglePage("""
-          {
-            "overlays": [
-              {
-                "name": "case04",
-                "pages": "1",
-                "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
-                "primitives": [
-                  { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
-                  { "type": "text", "at": [0,14], "size": 11, "value": "strokeWidth = 6pt" }
-                ]
-              }
-            ]
-          }
-          """);
-    }
-
-    [Test]
     // Primitive: text(rect) with valign=top at TOP-LEFT
     public void Case06_TextRect_VAlignTop_Page1()
     {
@@ -196,6 +175,27 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
+    // Primitive: line with strokeWidth at BOTTOM-RIGHT
+    public void Case04_Line_StrokeWidth_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case04",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+              "primitives": [
+                { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
+                { "type": "text", "at": [0,14], "size": 11, "value": "strokeWidth = 6pt" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
     // Primitive: text(rect) with halign=left at TOP-LEFT
     public void Case12_TextRect_HAlignLeft_Page1()
     {
@@ -257,6 +257,36 @@ public class GoldenMasterRendererTests
         }
         """);
     }
+
+
+
+[Test]
+// Primitive: image (base64 PNG) in rect (fit=contain) at TOP-LEFT
+public void Case20_ImageRect_PngBase64_Page1()
+{
+    const string png1x1 =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PuL9xQAAAABJRU5ErkJggg==";
+
+    var json = """
+    {
+      "overlays": [
+        {
+          "name": "case20",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
+          "primitives": [
+            { "type": "rect", "rect": [0,0,220,90], "cornerRadius": 10, "strokeWidth": 1 },
+            { "type": "image", "rect": [12,12,66,66], "data": { "mime": "image/png", "base64": "__PNG__" } },
+            { "type": "text", "at": [90,40], "size": 11, "value": "PNG base64 image" }
+          ]
+        }
+      ]
+    }
+    """.Replace("__PNG__", png1x1);
+
+    RunSinglePage(json);
+}
+
 
     private static void RunSinglePage(string jsonSpec)
     {
