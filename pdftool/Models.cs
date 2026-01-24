@@ -153,20 +153,17 @@ public sealed class LinePrimitiveSpec : PrimitiveSpec
     public double? StrokeWidth { get; init; }
 }
 
-public sealed class ImageDataSpec
-{
-    [JsonPropertyName("mime")]
-    public required string Mime { get; init; }
-
-    [JsonPropertyName("base64")]
+public sealed     [JsonPropertyName("base64")]
     public required string Base64 { get; init; }
 }
 
-public sealed class ImagePrimitiveSpec : PrimitiveSpec
+public sealed 
+class ImagePrimitiveSpec : PrimitiveSpec
 {
-    // rect: [x,y,w,h]
-    [JsonPropertyName("rect")]
-    public required double[] Rect { get; init; }
+    public double[] Rect { get; init; }
+    public string Base64 { get; init; }
+}
+
 
     // Only base64 payload is supported (no src)
     [JsonPropertyName("data")]

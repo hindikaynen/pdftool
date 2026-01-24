@@ -65,11 +65,11 @@ public static class JsonSpecValidator
                 if (im.Data is null)
                     throw new FormatException($"Overlay '{overlayName}': image.data is required");
                 if (string.IsNullOrWhiteSpace(im.Data.Mime))
-                    throw new FormatException($"Overlay '{overlayName}': image.data.mime is required");
+                    throw new FormatException($"Overlay '{overlayName}': image.base64 is required");
                 if (!IsSupportedImageMime(im.Data.Mime))
                     throw new FormatException($"Overlay '{overlayName}': unsupported image mime '{im.Data.Mime}' (supported: image/png, image/jpeg)");
                 if (string.IsNullOrWhiteSpace(im.Data.Base64))
-                    throw new FormatException($"Overlay '{overlayName}': image.data.base64 is required");
+                    throw new FormatException($"Overlay '{overlayName}': image.base64 is required");
                 // Base64 syntax check (no heavy decoding)
                 TryValidateBase64(im.Data.Base64, overlayName);
                 break;
@@ -170,7 +170,7 @@ if (t.HAlign is not null && !hasRect)
         }
         catch (Exception ex)
         {
-            throw new FormatException($"Overlay '{overlayName}': image.data.base64 is not valid base64 ({ex.GetType().Name})");
+            throw new FormatException($"Overlay '{overlayName}': image.base64 is not valid base64 ({ex.GetType().Name})");
         }
     }
 

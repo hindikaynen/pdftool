@@ -276,7 +276,7 @@ public void Case20_ImageRect_PngBase64_Page1()
           "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
           "primitives": [
             { "type": "rect", "rect": [0,0,220,90], "cornerRadius": 10, "strokeWidth": 1 },
-            { "type": "image", "rect": [12,12,66,66], "data": { "mime": "image/png", "base64": "__PNG__" } },
+            { "type": "image", "rect": [12,12,66,66], "base64": "__PNG__" },
             { "type": "text", "at": [90,40], "size": 11, "value": "PNG base64 image" }
           ]
         }

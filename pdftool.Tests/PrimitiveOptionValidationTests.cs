@@ -476,7 +476,7 @@ public class PrimitiveOptionValidationTests
                 {
                   "type": "image",
                   "rect": [0,0,10,10],
-                  "data": { "mime": "image/png", "base64": "{{png1x1}}" }
+                  "base64": "{{png1x1}}"
                 }
               ]
             }
@@ -498,7 +498,7 @@ public class PrimitiveOptionValidationTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft" },
               "primitives": [
-                { "type": "image", "rect": [0,0,10], "data": { "mime": "image/png", "base64": "AA==" } }
+                { "type": "image", "rect": [0,0,10], "base64": "AA==" }
               ]
             }
           ]
@@ -519,7 +519,7 @@ public class PrimitiveOptionValidationTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft" },
               "primitives": [
-                { "type": "image", "rect": [0,0,-10,10], "data": { "mime": "image/png", "base64": "AA==" } }
+                { "type": "image", "rect": [0,0,-10,10], "base64": "AA==" }
               ]
             }
           ]
@@ -561,7 +561,7 @@ public class PrimitiveOptionValidationTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft" },
               "primitives": [
-                { "type": "image", "rect": [0,0,10,10], "data": { "base64": "AA==" } }
+                { "type": "image", "rect": [0,0,10,10], "base64": "AA==" }
               ]
             }
           ]
@@ -580,7 +580,7 @@ public class PrimitiveOptionValidationTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft" },
               "primitives": [
-                { "type": "image", "rect": [0,0,10,10], "data": { "mime": "image/gif", "base64": "AA==" } }
+                { "type": "image", "rect": [0,0,10,10], "base64": "AA==" }
               ]
             }
           ]
@@ -602,26 +602,7 @@ public class PrimitiveOptionValidationTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft" },
               "primitives": [
-                { "type": "image", "rect": [0,0,10,10], "data": { "mime": "image/png" } }
-              ]
-            }
-          ]
-        }
-        """));
-    }
-
-    [Test]
-    public void Image_Base64Invalid_Fails()
-    {
-        var ov = ParseFirstOverlay("""
-        {
-          "overlays": [
-            {
-              "name": "I",
-              "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft" },
-              "primitives": [
-                { "type": "image", "rect": [0,0,10,10], "data": { "mime": "image/png", "base64": "!!!not-base64!!!" } }
+                { "type": "image", "rect": [0,0,10,10], "base64": "!!!not-base64!!!" }
               ]
             }
           ]

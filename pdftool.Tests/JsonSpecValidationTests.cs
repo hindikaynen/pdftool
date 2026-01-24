@@ -116,7 +116,7 @@ public class JsonSpecValidationTests
                 {
                   "type": "image",
                   "rect": [0,0,10,10],
-                  "data": { "mime": "image/png", "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/Pbqk0wAAAABJRU5ErkJggg==" }
+                  "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/Pbqk0wAAAABJRU5ErkJggg=="
                 }
               ]
             }
@@ -144,7 +144,7 @@ public class JsonSpecValidationTests
                 {
                   "type": "image",
                   "rect": [0,0,10,10],
-                  "data": { "mime": "image/png", "base64": "not_base64!!!" }
+                  "base64": "not_base64!!!"
                 }
               ]
             }
