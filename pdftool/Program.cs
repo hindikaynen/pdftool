@@ -100,8 +100,6 @@ internal static class Program
         using var pdf = new PdfDocument(reader, writer);
 
         var totalPages = pdf.GetNumberOfPages();
-
-        // Build plan (resolves 'last' etc.)
         var plan = WorkPlanBuilder.Build(spec, totalPages);
 
         Console.WriteLine($"Plan built. Overlays: {plan.Count}, totalPages: {totalPages}");
