@@ -17,3 +17,11 @@ Notes:
 ```bash
 dotnet test pdftool.sln
 ```
+
+
+- PagesRangeParser.Resolve(range, totalPages) resolves "last" and returns distinct sorted pages.
+
+## Apply (step 0/1)
+```bash
+dotnet run --project pdftool -- apply --in input.pdf --out output.pdf --json overlays.json
+```

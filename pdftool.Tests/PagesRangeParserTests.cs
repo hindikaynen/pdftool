@@ -26,6 +26,7 @@ public class PagesRangeParserTests
     [TestCase("1--3")]
     [TestCase("last-3")]
     [TestCase("5-3")]
+    [TestCase("1-2-3")]
     public void ValidateSyntax_RejectsInvalidExpressions(string range)
     {
         Assert.Throws<FormatException>(() => PagesRangeParser.ValidateSyntax(range));
@@ -38,5 +39,38 @@ public class PagesRangeParserTests
     public void UsesLastToken_Works(string range, bool expected)
     {
         Assert.That(PagesRangeParser.UsesLastToken(range), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Resolve_All_ReturnsAllPages()
+    {
+        var pages = PagesRangeParser.Resolve("all", totalPages: 5);
+        Assert.That(pages, Is.EqualTo(new[] { 1, 2, 3, 4, 5 }));
+    }
+
+    [Test]
+    public void Resolve_Last_Works()
+    {
+        var pages = PagesRangeParser.Resolve("last", totalPages: 7);
+        Assert.That(pages, Is.EqualTo(new[] { 7 }));
+    }
+
+    [Test]
+    public void Resolve_MixedRanges_DedupesAndSorts()
+    {
+        var pages = PagesRangeParser.Resolve("3,1-2,2,5-last", totalPages: 6);
+        Assert.That(pages, Is.EqualTo(new[] { 1, 2, 3, 5, 6 }));
+    }
+
+    [Test]
+    public void Resolve_OutOfBounds_Throws()
+    {
+        Assert.Throws<FormatException>(() => PagesRangeParser.Resolve("1-3,10", totalPages: 5));
+    }
+
+    [Test]
+    public void Resolve_TotalPagesMustBePositive()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => PagesRangeParser.Resolve("1", totalPages: 0));
     }
 }
