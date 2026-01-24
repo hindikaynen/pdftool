@@ -9,12 +9,12 @@ using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Layout;
 using iText.Layout.Properties;
+using iText.Layout.Renderer;
 using iText.IO.Font.Constants;
 using iText.IO.Image;
 using iText.Barcodes;
 using iText.Barcodes.Qrcode;
 using iText.Kernel.Colors;
-using iText.PdfCleanup;
 
 namespace PdfTool;
 
@@ -28,108 +28,62 @@ public static class PdfApplyEngine
         var totalPages = pdf.GetNumberOfPages();
         var plans = WorkPlanBuilder.Build(spec, totalPages);
 
-        // First pass: redaction for marker-based overlays.
-        // IMPORTANT: apply redaction before placing any overlay annotations.
-        var anchorPlacements = new List<AnchorPlacement>();
-        var hasRedactions = false;
-
         foreach (var plan in plans)
         {
-            if (plan.Placement.Mode != PlacementMode.textAnchor)
-                continue;
-
             foreach (var pageNo in plan.Pages)
             {
                 var page = pdf.GetPage(pageNo);
 
-                var matches = TextAnchorSearcher.FindMatches(page, plan.Placement.SearchText!);
-                var selected = SelectMatches(matches, plan.Placement.Occurrence);
-
-                if (selected.Count == 0)
-                    throw new FormatException($"Overlay '{plan.Name}': marker text '{plan.Placement.SearchText}' was not found on page {pageNo}.");
-
-                foreach (var m in selected)
+                if (plan.Placement.Mode == PlacementMode.corner)
                 {
-                    // Redaction (as modification): remove the prepared marker text.
-                    var redact = new PdfRedactAnnotation(m.BoundingBox);
-                    redact.SetInteriorColor([1f, 1f, 1f]);
-                    redact.SetColor(ColorConstants.WHITE);
-                    redact.SetFlag(PdfAnnotation.PRINT);
-                    page.AddAnnotation(redact);
-                    hasRedactions = true;
+                    if (plan.Placement.Corner is null)
+                        throw new FormatException($"Overlay '{plan.Name}': placement.corner is required.");
 
-                    anchorPlacements.Add(new AnchorPlacement(
-                        OverlayName: plan.Name,
-                        PageNo: pageNo,
-                        Placement: plan.Placement,
-                        Primitives: plan.Primitives,
-                        AnchorTopLeft: m.AnchorTopLeft
-                    ));
-                }
-            }
-        }
-
-        if (hasRedactions)
-        {
-            // Apply redaction annotations.
-            PdfCleaner.CleanUpRedactAnnotations(pdf);
-        }
-
-        foreach (var plan in plans)
-        {
-            if (plan.Placement.Mode == PlacementMode.corner)
-            {
-                if (plan.Placement.Corner is null)
-                    throw new FormatException($"Overlay '{plan.Name}': placement.corner is required.");
-
-                foreach (var pageNo in plan.Pages)
-                {
-                    var page = pdf.GetPage(pageNo);
                     OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, plan.Placement, plan.Primitives, plan.Name);
+                    continue;
                 }
 
-                continue;
-            }
-
-            if (plan.Placement.Mode == PlacementMode.textAnchor)
-            {
-                // Use the anchor points computed before redaction cleanup.
-                foreach (var ap in anchorPlacements)
+                if (plan.Placement.Mode == PlacementMode.textAnchor)
                 {
-                    if (!string.Equals(ap.OverlayName, plan.Name, StringComparison.Ordinal))
+                    if (string.IsNullOrEmpty(plan.Placement.SearchText))
+                        throw new FormatException($"Overlay '{plan.Name}': placement.text is required.");
+
+                    var matches = TextAnchorSearcher.FindMatchingTextBoxes(page, plan.Placement.SearchText);
+                    if (matches.Count == 0)
                         continue;
-                    var page = pdf.GetPage(ap.PageNo);
-                    OverlayStampRenderer.RenderOverlayAsStampAtTextAnchor(pdf, page, ap.Placement, ap.Primitives, ap.OverlayName, ap.AnchorTopLeft);
+
+                    var selected = TextAnchorSearcher.SelectOccurrences(matches, plan.Placement.Occurrence);
+                    if (selected.Count == 0)
+                        continue;
+
+                    // Order requirement for marker mode:
+                    // 1) redact/erase prepared marker, 2) add overlay annotations.
+                    foreach (var r in selected)
+                        VisualRedactor.PaintWhiteRectangle(pdf, page, r);
+
+                    foreach (var r in selected)
+                    {
+                        // Anchor point is TOP-LEFT of found text bbox.
+                        var anchorX = (double)r.GetX();
+                        var anchorY = (double)(r.GetY() + r.GetHeight());
+
+                        var dx = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[0] : 0;
+                        var dy = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[1] : 0;
+
+                        // For textAnchor, offset is [right, down]
+                        anchorX += dx;
+                        anchorY -= dy;
+
+                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeft(pdf, page, plan.Placement, plan.Primitives, plan.Name, anchorX, anchorY);
+                    }
+
+                    continue;
                 }
 
-                continue;
+                throw new NotSupportedException($"Unsupported placement.mode='{plan.Placement.Mode}'.");
             }
-
-            throw new NotSupportedException($"placement.mode='{plan.Placement.Mode}' is not supported.");
         }
     }
-
-    private static IReadOnlyList<TextAnchorMatch> SelectMatches(IReadOnlyList<TextAnchorMatch> matches, MarkerOccurrence occurrence)
-    {
-        if (matches.Count == 0)
-            return [];
-
-        return occurrence switch
-        {
-            MarkerOccurrence.first => [matches[0]],
-            MarkerOccurrence.last => [matches[^1]],
-            MarkerOccurrence.all => matches,
-            _ => throw new ArgumentOutOfRangeException(nameof(occurrence))
-        };
-    }
-
-    private readonly record struct AnchorPlacement(
-        string OverlayName,
-        int PageNo,
-        PlacementSpec Placement,
-        IReadOnlyList<PrimitiveSpec> Primitives,
-        PointD AnchorTopLeft
-    );
 }
 
 internal static class OverlayStampRenderer
@@ -174,45 +128,19 @@ internal static class OverlayStampRenderer
         page.AddAnnotation(annot);
     }
 
-    /// <summary>
-    /// Places overlay as a stamp annotation anchored to the top-left point of found marker text.
-    /// Offset semantics for placement.offset: [dx,dy] where dx is to the right, dy is down (both in pt).
-    /// </summary>
-    public static void RenderOverlayAsStampAtTextAnchor(
-        PdfDocument pdf,
-        PdfPage page,
-        PlacementSpec placement,
-        IReadOnlyList<PrimitiveSpec> primitives,
-        string overlayName,
-        PointD anchorTopLeft)
+    public static void RenderOverlayAsStampAtTopLeft(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftX, double topLeftY)
     {
         var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
         if (bounds is null)
             return;
 
-        var dx = 0d;
-        var dy = 0d;
-        if (placement.Offset is not null)
-        {
-            if (placement.Offset.Length != 2)
-                throw new ArgumentException("offset must be [dx,dy]", nameof(placement));
-            dx = placement.Offset[0];
-            dy = placement.Offset[1];
-        }
-
-        var targetX = anchorTopLeft.X + dx;
-        var targetY = anchorTopLeft.Y - dy; // down
-
-        // Align overlay's top-left (in overlay-local bounds) to the target point.
-        // origin + (overlayMinX, overlayMaxY) = (targetX, targetY)
-        var origin = new PointD(
-            targetX - bounds.Value.MinX,
-            targetY - bounds.Value.MaxY
-        );
-
+        // Position overlay so that its TOP-LEFT corner is at (topLeftX, topLeftY).
+        // Given bounds (minX..maxX, minY..maxY) in overlay coordinates, the stamp rectangle on page is:
+        //   x = topLeftX
+        //   y = topLeftY - height
         var rectOnPage = new Rectangle(
-            (float)(origin.X + bounds.Value.MinX),
-            (float)(origin.Y + bounds.Value.MinY),
+            (float)topLeftX,
+            (float)(topLeftY - bounds.Value.Height),
             (float)bounds.Value.Width,
             (float)bounds.Value.Height
         );
@@ -220,6 +148,7 @@ internal static class OverlayStampRenderer
         var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
+        // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance.
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
         PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives);
 
@@ -229,6 +158,21 @@ internal static class OverlayStampRenderer
         annot.SetNormalAppearance(xobj.GetPdfObject());
 
         page.AddAnnotation(annot);
+    }
+}
+
+internal static class VisualRedactor
+{
+    public static void PaintWhiteRectangle(PdfDocument pdf, PdfPage page, Rectangle rect)
+    {
+        // "Visual redaction": paint over the marker area in the page content stream.
+        // This is cross-platform (net8.0) but does NOT remove the underlying text from the content stream.
+        var canvas = new PdfCanvas(page.NewContentStreamAfter(), page.GetResources(), pdf);
+        canvas.SaveState();
+        canvas.SetFillColor(ColorConstants.WHITE);
+        canvas.Rectangle(rect);
+        canvas.Fill();
+        canvas.RestoreState();
     }
 }
 
@@ -242,8 +186,7 @@ internal static class PrimitiveBoundsCalculator
 {
     public static BoundsD? ComputeBoundsMeasured(IReadOnlyList<PrimitiveSpec> primitives)
     {
-        if (primitives.Count == 0) 
-            return null;
+        if (primitives.Count == 0) return null;
 
         var hasAny = false;
         double minX = 0, minY = 0, maxX = 0, maxY = 0;
@@ -636,12 +579,12 @@ public static class PrimitiveRenderer
 
     private static ParagraphMetrics MeasureParagraph(Canvas canvas, Paragraph p, float width)
     {
-        const float hugeHeight = 10_000f;
+        var hugeHeight = 10_000f;
         var measureRect = new Rectangle(0, 0, width, hugeHeight);
 
         using var measureCanvas = new Canvas(canvas.GetPdfCanvas(), measureRect);
 
-        var renderer = p.CreateRendererSubTree();
+        IRenderer renderer = p.CreateRendererSubTree();
         renderer.SetParent(measureCanvas.GetRenderer());
 
         var result = renderer.Layout(new LayoutContext(new LayoutArea(1, measureRect)));

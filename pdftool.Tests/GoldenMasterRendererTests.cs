@@ -217,69 +217,6 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
-    // placement=textAnchor: redact marker + place overlay at the marker's top-left (with offset)
-    public void Case30_TextAnchor_RedactAndOverlay_Page1()
-    {
-        RunOnePageFromInput("""
-        {
-          "overlays": [
-            {
-              "name": "case30",
-              "pages": "1",
-              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_ONE>>", "occurrence": "first" },
-              "primitives": [
-                { "type": "rect", "rect": [0,0,240,50], "strokeWidth": 1 },
-                { "type": "text", "at": [12,18], "size": 12, "value": "textAnchor + redaction" }
-              ]
-            }
-          ]
-        }
-        """, inputPdfFileName: "textanchor-2p.pdf", pageNumber1BasedToRender: 1);
-    }
-
-    [Test]
-    // placement=textAnchor: occurrence=last on page 2 (two markers present)
-    public void Case31_TextAnchor_OccurrenceLast_Page2()
-    {
-        RunOnePageFromInput("""
-        {
-          "overlays": [
-            {
-              "name": "case31",
-              "pages": "2",
-              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "last" },
-              "primitives": [
-                { "type": "rect", "rect": [0,0,200,45], "strokeWidth": 1 },
-                { "type": "text", "at": [12,16], "size": 12, "value": "occurrence=last" }
-              ]
-            }
-          ]
-        }
-        """, inputPdfFileName: "textanchor-2p.pdf", pageNumber1BasedToRender: 2);
-    }
-
-    [Test]
-    // placement=textAnchor: occurrence=all on page 2 (two markers present -> two overlays)
-    public void Case32_TextAnchor_OccurrenceAll_Page2()
-    {
-        RunOnePageFromInput("""
-        {
-          "overlays": [
-            {
-              "name": "case32",
-              "pages": "2",
-              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "all" },
-              "primitives": [
-                { "type": "rect", "rect": [0,0,180,40], "strokeWidth": 1 },
-                { "type": "text", "at": [12,14], "size": 12, "value": "occurrence=all" }
-              ]
-            }
-          ]
-        }
-        """, inputPdfFileName: "textanchor-2p.pdf", pageNumber1BasedToRender: 2);
-    }
-
-    [Test]
     // Primitive: text(rect) with halign=center at TOP-RIGHT
     public void Case13_TextRect_HAlignCenter_Page1()
     {
@@ -557,6 +494,78 @@ public void Case26_Code128_NoText_Wide_Page1()
     }
     """);
 }
+
+    [Test]
+    // Placement: textAnchor (occurrence=first) on page 1 + visual redaction (marker should disappear)
+    public void Case30_TextAnchor_First_Page1()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case30",
+              "pages": "1",
+              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_ONE>>", "occurrence": "first" },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,220,50], "strokeWidth": 1 },
+                { "type": "text", "at": [10,18], "size": 12, "value": "textAnchor first" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "textanchor-2p.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+    [Test]
+    // Placement: textAnchor (occurrence=last) on page 2
+    public void Case31_TextAnchor_Last_Page2()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case31",
+              "pages": "2",
+              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "last" },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,220,50], "strokeWidth": 1 },
+                { "type": "text", "at": [10,18], "size": 12, "value": "textAnchor last" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "textanchor-2p.pdf",
+        pageNumber1BasedToRender: 2);
+    }
+
+    [Test]
+    // Placement: textAnchor (occurrence=all) on page 2 (overlay rendered twice)
+    public void Case32_TextAnchor_All_Page2()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+              "name": "case32",
+              "pages": "2",
+              "placement": { "mode": "textAnchor", "text": "<<ANCHOR_TWO>>", "occurrence": "all" },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,220,50], "strokeWidth": 1 },
+                { "type": "text", "at": [10,18], "size": 12, "value": "textAnchor all" }
+              ]
+            }
+          ]
+        }
+        """,
+        inputPdfFileName: "textanchor-2p.pdf",
+        pageNumber1BasedToRender: 2);
+    }
 
     private static void RunSinglePage(string jsonSpec)
     {
