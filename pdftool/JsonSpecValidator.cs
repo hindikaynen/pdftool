@@ -21,15 +21,15 @@ public static class JsonSpecValidator
         {
             if (p.Corner is null)
                 throw new FormatException($"Overlay '{name}': placement.corner is required for mode='corner'");
-            if (!string.IsNullOrWhiteSpace(p.MarkerText))
+            if (!string.IsNullOrWhiteSpace(p.SearchText))
                 throw new FormatException($"Overlay '{name}': placement.text must not be set for mode='corner'");
         }
         else
         {
-            if (string.IsNullOrWhiteSpace(p.MarkerText))
-                throw new FormatException($"Overlay '{name}': placement.text is required for mode='textMarker'");
+            if (string.IsNullOrWhiteSpace(p.SearchText))
+                throw new FormatException($"Overlay '{name}': placement.text is required for mode='textAnchor'");
             if (p.Corner is not null)
-                throw new FormatException($"Overlay '{name}': placement.corner must not be set for mode='textMarker'");
+                throw new FormatException($"Overlay '{name}': placement.corner must not be set for mode='textAnchor'");
         }
     }
 

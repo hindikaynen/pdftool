@@ -27,7 +27,7 @@ public sealed class OverlaySpec
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum PlacementMode { corner, textMarker }
+public enum PlacementMode { corner, textAnchor }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PageCorner { topLeft, topRight, bottomLeft, bottomRight }
@@ -46,7 +46,7 @@ public sealed class PlacementSpec
 
     // Marker mode
     [JsonPropertyName("text")]
-    public string? MarkerText { get; init; }
+    public string? SearchText { get; init; }
 
     [JsonPropertyName("occurrence")]
     public MarkerOccurrence Occurrence { get; init; } = MarkerOccurrence.first;

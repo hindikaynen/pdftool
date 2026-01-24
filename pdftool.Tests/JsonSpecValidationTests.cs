@@ -57,7 +57,7 @@ public class JsonSpecValidationTests
     }
 
     [Test]
-    public void ValidatePlacement_TextMarkerRequiresText()
+    public void ValidatePlacement_TextAnchorRequiresText()
     {
         var json = """
         {
@@ -65,7 +65,7 @@ public class JsonSpecValidationTests
             {
               "name": "A",
               "pages": "1",
-              "placement": { "mode": "textMarker", "align": "bottomLeft" },
+              "placement": { "mode": "textAnchor", "align": "bottomLeft" },
               "primitives": []
             }
           ]
