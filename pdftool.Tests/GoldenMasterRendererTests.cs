@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using NUnit.Framework;
 using iText.Kernel.Pdf;
 
@@ -8,23 +9,135 @@ namespace PdfTool.Tests;
 [TestFixture]
 public class GoldenMasterRendererTests
 {
-    [Test]
-    public void Case01_RectAndText_Page1() => RunSinglePage("case01.json", pageNumber1Based: 1);
+    // NOTE:
+    // Each test contains its JSON spec inline for maximum readability.
+    // Baseline naming:
+    // {TestClass}.{TestMethod}.p{Page}.png
+
+    // --- Implemented primitives ---
 
     [Test]
-    public void Case02_RectCornerRadius_Page1() => RunSinglePage("case02.json", pageNumber1Based: 1);
-
-    [Test]
-    public void Case03_TextBlock_Wrap_Page1() => RunSinglePage("case03.json", pageNumber1Based: 1);
-
-    private static void RunSinglePage(string specFileName, int pageNumber1Based)
+    // Primitive: rect (stroke) + text(at)
+    public void Case01_RectAndTextAt_Page1()
     {
-        // Expected baselines live in the source tree (pdftool.Tests/TestData/expected).
-        // Actual artifacts are written into the test work directory (bin/...), so they don't pollute the repo.
-        var testData = TestPaths.GetTestDataDir();
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case01",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-120] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,240,60], "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "Rect + text(at)" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
 
+    [Test]
+    // Primitive: rect with cornerRadius + text(at)
+    public void Case02_RectCornerRadius_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case02",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-200] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "value": "cornerRadius=12" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
+    // Primitive: text(rect) with wrap=true
+    public void Case03_TextRect_Wrap_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case03",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-300] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
+                {
+                  "type": "text",
+                  "rect": [10,10,300,70],
+                  "wrap": true,
+                  "size": 11,
+                  "value": "This is a long text that should wrap automatically inside a fixed rectangle."
+                }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
+    // Primitive: line with strokeWidth
+    public void Case04_Line_StrokeWidth_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case04",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-420] },
+              "primitives": [
+                { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
+                { "type": "text", "at": [0,14], "size": 11, "value": "strokeWidth = 6pt" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    // --- Not implemented yet ---
+
+    [Test]
+    [Ignore("Not implemented yet: image primitive renderer.")]
+    // Primitive: image (base64 PNG)
+    public void Case10_Image_PngBase64_Page1()
+    {
+        const string png1x1 =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PuL9xQAAAABJRU5ErkJggg==";
+
+        RunSinglePage($$"""
+        {
+          "overlays": [
+            {
+              "name": "case10",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,-520] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,200,80], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "image", "rect": [10,10,60,60], "data": { "mime": "image/png", "base64": "{{png1x1}}" } },
+                { "type": "text", "at": [80,30], "size": 11, "value": "PNG base64 image" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    private static void RunSinglePage(string jsonSpec)
+    {
+        var testData = TestPaths.GetTestDataDir();
         var inputPdf = Path.Combine(testData, "input", "empty-10p.pdf");
-        var specJson = Path.Combine(testData, "specs", specFileName);
 
         var workDir = TestContext.CurrentContext.WorkDirectory;
         var actualDir = Path.Combine(workDir, "pdftool_test_artifacts", "actual");
@@ -33,44 +146,51 @@ public class GoldenMasterRendererTests
         var expectedDir = Path.Combine(testData, "expected");
         Directory.CreateDirectory(expectedDir);
 
-        // Baseline naming: {TestClass}.{TestMethod}[.{Case}].p{Page}.png
         var testId = $"{TestContext.CurrentContext.Test.ClassName}.{TestContext.CurrentContext.Test.MethodName}";
-
         var actualPdf = Path.Combine(actualDir, $"{testId}.output.pdf");
 
-        // Apply
+        var specPath = WriteTempJson(jsonSpec);
+
         using (var reader = new PdfReader(inputPdf))
         using (var writer = new PdfWriter(actualPdf))
         using (var pdf = new PdfDocument(reader, writer))
         {
-            var spec = JsonSpecParser.Parse(specJson);
+            var spec = JsonSpecParser.Parse(specPath);
             PdfApplyEngine.Apply(pdf, spec);
         }
 
-        // Rasterize page
-        var dpi = 144;
-        var actualPng = Path.Combine(actualDir, $"{testId}.p{pageNumber1Based}.png");
-        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: pageNumber1Based, dpi: dpi, pngPath: actualPng);
+        var actualPng = Path.Combine(actualDir, $"{testId}.p1.png");
+        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: 1, dpi: 144, pngPath: actualPng);
 
-        var expectedPng = Path.Combine(expectedDir, $"{testId}.p{pageNumber1Based}.png");
+        var expectedPng = Path.Combine(expectedDir, $"{testId}.p1.png");
 
         if (!File.Exists(expectedPng))
         {
             if (GoldenTestConfig.UpdateBaselines)
             {
                 File.Copy(actualPng, expectedPng, overwrite: true);
-                Assert.Pass("Baseline created in TestData/expected. Review and commit expected PNG.");
+                Assert.Pass("Baseline created.");
             }
 
-            Assert.Fail("Baseline is missing. Enable UPDATE_BASELINES in GoldenTestConfig.cs to generate it.");
+            Assert.Fail("Baseline missing. Enable UPDATE_BASELINES.");
         }
 
         if (GoldenTestConfig.UpdateBaselines)
         {
             File.Copy(actualPng, expectedPng, overwrite: true);
-            Assert.Pass("Baseline updated in TestData/expected. Review and commit expected PNG.");
+            Assert.Pass("Baseline updated.");
         }
 
         ImageComparer.AssertPngEqual(expectedPng, actualPng);
+    }
+
+    private static string WriteTempJson(string json)
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "pdftool_golden_specs");
+        Directory.CreateDirectory(dir);
+
+        var path = Path.Combine(dir, Guid.NewGuid().ToString("N") + ".json");
+        File.WriteAllText(path, json, Encoding.UTF8);
+        return path;
     }
 }

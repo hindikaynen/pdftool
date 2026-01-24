@@ -1,7 +1,8 @@
+using NUnit.Framework;
 using System;
 using System.IO;
 using System.Text;
-using NUnit.Framework;
+using System.Text.Json;
 
 namespace PdfTool.Tests;
 
@@ -531,7 +532,8 @@ public class PrimitiveOptionValidationTests
     [Test]
     public void Image_DataMissing_Fails()
     {
-        var ov = ParseFirstOverlay("""
+        // NOTE: 'data' is required by the model, so this fails during JSON parsing (before validation).
+        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
         {
           "overlays": [
             {
@@ -544,15 +546,14 @@ public class PrimitiveOptionValidationTests
             }
           ]
         }
-        """);
-
-        Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
+        """));
     }
 
     [Test]
     public void Image_MimeMissing_Fails()
     {
-        var ov = ParseFirstOverlay("""
+        // NOTE: 'mime' is required by the model, so this fails during JSON parsing (before validation).
+        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
         {
           "overlays": [
             {
@@ -565,9 +566,7 @@ public class PrimitiveOptionValidationTests
             }
           ]
         }
-        """);
-
-        Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
+        """));
     }
 
     [Test]
@@ -594,7 +593,8 @@ public class PrimitiveOptionValidationTests
     [Test]
     public void Image_Base64Missing_Fails()
     {
-        var ov = ParseFirstOverlay("""
+        // NOTE: 'base64' is required by the model, so this fails during JSON parsing (before validation).
+        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
         {
           "overlays": [
             {
@@ -607,9 +607,7 @@ public class PrimitiveOptionValidationTests
             }
           ]
         }
-        """);
-
-        Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
+        """));
     }
 
     [Test]
