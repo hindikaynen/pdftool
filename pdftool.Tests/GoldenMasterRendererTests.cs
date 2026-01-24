@@ -291,20 +291,20 @@ public void Case20_ImageRect_PngBase64_Page1()
 
 
 [Test]
-// Primitive: barcode QR (kind=qr) with ecLevel=H in rect
-public void Case21_BarcodeQr_EcH_Page1()
+// Primitive: barcode.qr with EC level L, placed at TOP-RIGHT
+public void Case23_BarcodeQr_EcL_TopRight_Page1()
 {
     var json = """
     {
       "overlays": [
         {
-          "name": "case21",
+          "name": "case23",
           "pages": "1",
-          "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
+          "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,220,140], "strokeWidth": 1 },
-            { "type": "barcode", "kind": "qr", "rect": [12,12,116,116], "value": "HELLO-QR-EC-H", "options": { "ecLevel": "H" } },
-            { "type": "text", "at": [140,70], "size": 10, "value": "QR ec=H" }
+            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "value": "HELLO-QR-L", "options": { "ecLevel": "L" } },
+            { "type": "text", "at": [110,58], "size": 11, "value": "QR EC=L" }
           ]
         }
       ]
@@ -315,20 +315,20 @@ public void Case21_BarcodeQr_EcH_Page1()
 }
 
 [Test]
-// Primitive: barcode CODE128 in wide rect with showText=false
-public void Case22_BarcodeCode128_NoText_Page1()
+// Primitive: barcode.qr with EC level Q, placed at BOTTOM-LEFT
+public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
 {
     var json = """
     {
       "overlays": [
         {
-          "name": "case22",
+          "name": "case24",
           "pages": "1",
-          "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+          "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,360,120], "strokeWidth": 1 },
-            { "type": "barcode", "kind": "code128", "rect": [12,44,336,60], "value": "CODE128-1234567890", "options": { "showText": false } },
-            { "type": "text", "at": [12,18], "size": 10, "value": "CODE128 (no text)" }
+            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "value": "HELLO-QR-Q", "options": { "ecLevel": "Q" } },
+            { "type": "text", "at": [110,58], "size": 11, "value": "QR EC=Q" }
           ]
         }
       ]
@@ -338,6 +338,162 @@ public void Case22_BarcodeCode128_NoText_Page1()
     RunSinglePage(json);
 }
 
+[Test]
+// Primitive: barcode.code128 with human-readable text ON, placed at BOTTOM-RIGHT
+public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
+{
+    var json = """
+    {
+      "overlays": [
+        {
+          "name": "case25",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+          "primitives": [
+            { "type": "rect", "rect": [0,0,340,120], "cornerRadius": 10, "strokeWidth": 1 },
+            { "type": "barcode", "kind": "code128", "rect": [12,50,316,55], "value": "ABC-123-XYZ", "options": { "showText": true } },
+            { "type": "text", "at": [12,18], "size": 11, "value": "Code128 showText=true" }
+          ]
+        }
+      ]
+    }
+    """;
+
+    RunSinglePage(json);
+}
+
+[Test]
+// Primitive: barcode.code128 narrow rect (stress fit into small width), showText OFF
+public void Case26_BarcodeCode128_Narrow_NoText_Page1()
+{
+    var json = """
+    {
+      "overlays": [
+        {
+          "name": "case26",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,150] },
+          "primitives": [
+            { "type": "rect", "rect": [0,0,220,105], "cornerRadius": 10, "strokeWidth": 1 },
+            { "type": "barcode", "kind": "code128", "rect": [12,38,196,55], "value": "01234567890123456789", "options": { "showText": false } },
+            { "type": "text", "at": [12,14], "size": 11, "value": "Code128 narrow (no text)" }
+          ]
+        }
+      ]
+    }
+    """;
+
+    RunSinglePage(json);
+}
+
+[Test]
+// Primitive: multiple barcodes in a single overlay (QR + Code128)
+public void Case27_Barcode_Multiple_Primitives_Page1()
+{
+    var json = """
+    {
+      "overlays": [
+        {
+          "name": "case27",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "topRight", "offset": [72,150] },
+          "primitives": [
+            { "type": "rect", "rect": [0,0,420,140], "cornerRadius": 10, "strokeWidth": 1 },
+
+            { "type": "barcode", "kind": "qr", "rect": [12,38,90,90], "value": "MULTI-QR", "options": { "ecLevel": "M" } },
+            { "type": "text", "at": [12,14], "size": 11, "value": "QR (M)" },
+
+            { "type": "barcode", "kind": "code128", "rect": [120,55,288,60], "value": "MULTI-128", "options": { "showText": false } },
+            { "type": "text", "at": [120,14], "size": 11, "value": "Code128 (no text)" }
+          ]
+        }
+      ]
+    }
+    """;
+
+    RunSinglePage(json);
+}
+    
+
+[Test]
+// Primitive: QR code default EC level (M), medium size
+public void Case23_QR_DefaultEc_Page1()
+{
+    RunSinglePage("""
+    {
+      "overlays": [
+        {
+          "name": "qr-default",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
+          "primitives": [
+            { "type": "barcode", "kind": "qr", "rect": [0,0,120,120], "value": "HELLO-QR" }
+          ]
+        }
+      ]
+    }
+    """);
+}
+
+[Test]
+// Primitive: QR code high EC level (H), large size
+public void Case24_QR_EcH_Large_Page1()
+{
+    RunSinglePage("""
+    {
+      "overlays": [
+        {
+          "name": "qr-ech",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
+          "primitives": [
+            { "type": "barcode", "kind": "qr", "rect": [0,0,160,160], "value": "HELLO-QR-H", "options": { "ecLevel": "H" } }
+          ]
+        }
+      ]
+    }
+    """);
+}
+
+[Test]
+// Primitive: Code128 barcode with human-readable text
+public void Case25_Code128_WithText_Page1()
+{
+    RunSinglePage("""
+    {
+      "overlays": [
+        {
+          "name": "code128-text",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
+          "primitives": [
+            { "type": "barcode", "kind": "code128", "rect": [0,0,260,80], "value": "ABC-123-XYZ", "options": { "showText": true } }
+          ]
+        }
+      ]
+    }
+    """);
+}
+
+[Test]
+// Primitive: Code128 barcode without human-readable text
+public void Case26_Code128_NoText_Wide_Page1()
+{
+    RunSinglePage("""
+    {
+      "overlays": [
+        {
+          "name": "code128-notext",
+          "pages": "1",
+          "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,120] },
+          "primitives": [
+            { "type": "barcode", "kind": "code128", "rect": [0,0,320,60], "value": "NO-TEXT-128", "options": { "showText": false } }
+          ]
+        }
+      ]
+    }
+    """);
+}
 
     private static void RunSinglePage(string jsonSpec)
     {
