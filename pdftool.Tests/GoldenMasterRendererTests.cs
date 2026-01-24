@@ -9,14 +9,19 @@ namespace PdfTool.Tests;
 public class GoldenMasterRendererTests
 {
     [Test]
-    public void Case01_RectAndText_Page1()
+    public void Case01_RectAndText_Page1() => RunSinglePage("case01.json", pageNumber1Based: 1);
+
+    [Test]
+    public void Case02_RectCornerRadius_Page1() => RunSinglePage("case02.json", pageNumber1Based: 1);
+
+    private static void RunSinglePage(string specFileName, int pageNumber1Based)
     {
         // Expected baselines live in the source tree (pdftool.Tests/TestData/expected).
         // Actual artifacts are written into the test work directory (bin/...), so they don't pollute the repo.
         var testData = TestPaths.GetTestDataDir();
 
         var inputPdf = Path.Combine(testData, "input", "empty-10p.pdf");
-        var specJson = Path.Combine(testData, "specs", "case01.json");
+        var specJson = Path.Combine(testData, "specs", specFileName);
 
         var workDir = TestContext.CurrentContext.WorkDirectory;
         var actualDir = Path.Combine(workDir, "pdftool_test_artifacts", "actual");
@@ -39,12 +44,12 @@ public class GoldenMasterRendererTests
             PdfApplyEngine.Apply(pdf, spec);
         }
 
-        // Rasterize page 1
+        // Rasterize page
         var dpi = 144;
-        var actualPng = Path.Combine(actualDir, $"{testId}.p1.png");
-        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: 1, dpi: dpi, pngPath: actualPng);
+        var actualPng = Path.Combine(actualDir, $"{testId}.p{pageNumber1Based}.png");
+        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: pageNumber1Based, dpi: dpi, pngPath: actualPng);
 
-        var expectedPng = Path.Combine(expectedDir, $"{testId}.p1.png");
+        var expectedPng = Path.Combine(expectedDir, $"{testId}.p{pageNumber1Based}.png");
 
         if (!File.Exists(expectedPng))
         {

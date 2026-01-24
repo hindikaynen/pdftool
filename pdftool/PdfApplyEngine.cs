@@ -87,7 +87,11 @@ public static class PrimitiveRenderer
         var h = (float)r.Rect[3];
 
         // NOTE: in this iteration we don't parse colors; draw a simple rectangle using default graphics state.
-        c.Rectangle(x, y, w, h);
+        var cr = (float)(r.CornerRadius ?? 0);
+        if (cr > 0)
+            c.RoundRectangle(x, y, w, h, cr);
+        else
+            c.Rectangle(x, y, w, h);
 
         if (r.StrokeWidth is not null && r.StrokeWidth.Value > 0)
             c.SetLineWidth((float)r.StrokeWidth.Value);
