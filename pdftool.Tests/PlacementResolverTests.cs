@@ -9,7 +9,7 @@ public class PlacementResolverTests
     [Test]
     public void ResolveCornerOriginVariantB_BottomLeft_NoOffset_AnchorsOverlayBottomLeft()
     {
-        var p = PlacementResolver.ResolveCornerOriginVariantB(
+        var p = PlacementResolver.ResolveCornerOrigin(
             pageWidth: 600,
             pageHeight: 800,
             corner: PageCorner.bottomLeft,
@@ -29,7 +29,7 @@ public class PlacementResolverTests
     [Test]
     public void ResolveCornerOriginVariantB_TopLeft_WithOffset_AnchorsOverlayTopLeft()
     {
-        var p = PlacementResolver.ResolveCornerOriginVariantB(
+        var p = PlacementResolver.ResolveCornerOrigin(
             pageWidth: 600,
             pageHeight: 800,
             corner: PageCorner.topLeft,
@@ -49,7 +49,7 @@ public class PlacementResolverTests
     [Test]
     public void ResolveCornerOriginVariantB_TopRight_WithOffset_AnchorsOverlayTopRight()
     {
-        var p = PlacementResolver.ResolveCornerOriginVariantB(
+        var p = PlacementResolver.ResolveCornerOrigin(
             pageWidth: 600,
             pageHeight: 800,
             corner: PageCorner.topRight,
@@ -69,7 +69,7 @@ public class PlacementResolverTests
     [Test]
     public void ResolveCornerOriginVariantB_BottomRight_WithOffset_AnchorsOverlayBottomRight()
     {
-        var p = PlacementResolver.ResolveCornerOriginVariantB(
+        var p = PlacementResolver.ResolveCornerOrigin(
             pageWidth: 600,
             pageHeight: 800,
             corner: PageCorner.bottomRight,
@@ -90,7 +90,7 @@ public class PlacementResolverTests
     public void ResolveCornerOriginVariantB_OffsetMustBeLen2()
     {
         Assert.Throws<ArgumentException>(() =>
-            PlacementResolver.ResolveCornerOriginVariantB(
+            PlacementResolver.ResolveCornerOrigin(
                 pageWidth: 600,
                 pageHeight: 800,
                 corner: PageCorner.bottomRight,
@@ -105,7 +105,7 @@ public class PlacementResolverTests
     public void ResolveCornerOriginVariantB_PageSizeMustBePositive()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            PlacementResolver.ResolveCornerOriginVariantB(
+            PlacementResolver.ResolveCornerOrigin(
                 pageWidth: 0,
                 pageHeight: 800,
                 corner: PageCorner.bottomLeft,
@@ -116,7 +116,7 @@ public class PlacementResolverTests
                 overlayMaxY: 50));
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            PlacementResolver.ResolveCornerOriginVariantB(
+            PlacementResolver.ResolveCornerOrigin(
                 pageWidth: 600,
                 pageHeight: -1,
                 corner: PageCorner.bottomLeft,

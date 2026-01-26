@@ -133,7 +133,7 @@ var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
 var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
 
 // Resolve placement in VIEW coordinates (what user sees), then convert the resulting rectangle to USER space.
-var originView = PlacementResolver.ResolveCornerOriginVariantB(
+var originView = PlacementResolver.ResolveCornerOrigin(
     pageWidth: viewW,
     pageHeight: viewH,
     corner: placement.Corner!.Value,

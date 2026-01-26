@@ -20,7 +20,7 @@ public static class PlacementResolver
     /// When you later place primitives with (origin + localX, origin + localY), the chosen
     /// overlay corner will match the target point inside the page.
     /// </summary>
-    public static PointD ResolveCornerOriginVariantB(
+    public static PointD ResolveCornerOrigin(
         double pageWidth,
         double pageHeight,
         PageCorner corner,
