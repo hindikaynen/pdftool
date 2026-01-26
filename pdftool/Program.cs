@@ -83,7 +83,6 @@ internal static class Program
 
         Console.WriteLine("JSON is valid.");
         Console.WriteLine($"Overlays: {spec.Overlays.Count}");
-        Console.WriteLine($"Uses 'last': {spec.Overlays.Any(o => PagesRangeParser.UsesLastToken(o.Pages))}");
     }
 
     private static void RunApply(FileInfo inPdf, FileInfo outPdf, FileInfo jsonFile)
@@ -103,6 +102,5 @@ internal static class Program
         var plan = WorkPlanBuilder.Build(spec, totalPages);
 
         Console.WriteLine($"Plan built. Overlays: {plan.Count}, totalPages: {totalPages}");
-        Console.WriteLine("NOTE: Rendering is not implemented yet. Output PDF is a rewritten copy of input.");
     }
 }
