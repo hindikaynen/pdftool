@@ -932,47 +932,54 @@ public void Case26_Code128_NoText_Wide_Page1()
         var actualDir = Path.Combine(workDir, "pdftool_test_artifacts", "actual");
         Directory.CreateDirectory(actualDir);
 
-        var expectedDir = Path.Combine(testData, "expected");
-        Directory.CreateDirectory(expectedDir);
-
-        // если вызываешь из самого теста:
-        var testId = $"{typeof(GoldenMasterRendererTests).FullName}.{testName}";
-
-        var actualPdf = Path.Combine(actualDir, $"{testId}.output.pdf");
-
-        var specPath = WriteTempJson(jsonSpec);
-
-        using (var reader = new PdfReader(inputPdf))
-        using (var writer = new PdfWriter(actualPdf))
-        using (var pdf = new PdfDocument(reader, writer))
+        try
         {
-            var spec = JsonSpecParser.Parse(specPath);
-            PdfApplyEngine.Apply(pdf, spec);
-        }
+            var expectedDir = Path.Combine(testData, "expected");
+            Directory.CreateDirectory(expectedDir);
 
-        var actualPng = Path.Combine(actualDir, $"{testId}.p{pageNumber1BasedToRender}.png");
-        PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: pageNumber1BasedToRender, dpi: 144, pngPath: actualPng);
+            // если вызываешь из самого теста:
+            var testId = $"{typeof(GoldenMasterRendererTests).FullName}.{testName}";
 
-        var expectedPng = Path.Combine(expectedDir, $"{testId}.p{pageNumber1BasedToRender}.png");
+            var actualPdf = Path.Combine(actualDir, $"{testId}.output.pdf");
 
-        if (!File.Exists(expectedPng))
-        {
+            var specPath = WriteTempJson(jsonSpec);
+
+            using (var reader = new PdfReader(inputPdf))
+            using (var writer = new PdfWriter(actualPdf))
+            using (var pdf = new PdfDocument(reader, writer))
+            {
+                var spec = JsonSpecParser.Parse(specPath);
+                PdfApplyEngine.Apply(pdf, spec);
+            }
+
+            var actualPng = Path.Combine(actualDir, $"{testId}.p{pageNumber1BasedToRender}.png");
+            PdfRasterizer.RenderPageToPng(actualPdf, pageNumber1Based: pageNumber1BasedToRender, dpi: 144, pngPath: actualPng);
+
+            var expectedPng = Path.Combine(expectedDir, $"{testId}.p{pageNumber1BasedToRender}.png");
+
+            if (!File.Exists(expectedPng))
+            {
+                if (GoldenTestConfig.UpdateBaselines)
+                {
+                    File.Copy(actualPng, expectedPng, overwrite: true);
+                    return;
+                }
+
+                Assert.Fail("Baseline missing. Enable UPDATE_BASELINES.");
+            }
+
             if (GoldenTestConfig.UpdateBaselines)
             {
                 File.Copy(actualPng, expectedPng, overwrite: true);
                 return;
             }
 
-            Assert.Fail("Baseline missing. Enable UPDATE_BASELINES.");
+            ImageComparer.AssertPngEqualWithTolerance(expectedPng, actualPng);
         }
-
-        if (GoldenTestConfig.UpdateBaselines)
+        finally
         {
-            File.Copy(actualPng, expectedPng, overwrite: true);
-            return;
+            Directory.Delete(actualDir, true);    
         }
-
-        ImageComparer.AssertPngEqualWithTolerance(expectedPng, actualPng);
     }
 
     private static string WriteTempJson(string json)
