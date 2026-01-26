@@ -150,10 +150,13 @@ public sealed class LinePrimitiveSpec : PrimitiveSpec
 
 class ImagePrimitiveSpec : PrimitiveSpec
 {
-    [JsonPropertyName("rect")]
     public double[] Rect { get; init; }
-    [JsonPropertyName("base64")]
     public string Base64 { get; init; }
+
+    // Optional background and border
+    public string? Fill { get; init; }
+    public string? Stroke { get; init; }
+    public double? StrokeWidth { get; init; }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -174,4 +177,17 @@ public sealed class BarcodePrimitiveSpec : PrimitiveSpec
     // Arbitrary per-kind options
     [JsonPropertyName("options")]
     public JsonElement? Options { get; init; }
+
+    // Optional coloring and border/background
+    [JsonPropertyName("color")]
+    public string? Color { get; init; }
+
+    [JsonPropertyName("fill")]
+    public string? Fill { get; init; }
+
+    [JsonPropertyName("stroke")]
+    public string? Stroke { get; init; }
+
+    [JsonPropertyName("strokeWidth")]
+    public double? StrokeWidth { get; init; }
 }

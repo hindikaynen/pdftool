@@ -15,6 +15,7 @@ using iText.IO.Image;
 using iText.Barcodes;
 using iText.Barcodes.Qrcode;
 using iText.Kernel.Colors;
+using iText.Kernel.Pdf.Extgstate;
 
 namespace PdfTool;
 
@@ -443,6 +444,8 @@ public static class PrimitiveRenderer
 
     private static void DrawRect(PdfCanvas c, PointD o, RectPrimitiveSpec r)
     {
+        c.SaveState();
+
         var x = (float)(o.X + r.Rect[0]);
         var y = (float)(o.Y + r.Rect[1]);
         var w = (float)r.Rect[2];
@@ -457,16 +460,32 @@ public static class PrimitiveRenderer
         if (r.StrokeWidth is not null && r.StrokeWidth.Value > 0)
             c.SetLineWidth((float)r.StrokeWidth.Value);
 
+        var fill = ColorSupport.Parse(r.Fill);
+        var stroke = ColorSupport.Parse(r.Stroke);
+
+        if (fill is not null)
+            c.SetFillColor(fill.Value.Color);
+        if (stroke is not null)
+            c.SetStrokeColor(stroke.Value.Color);
+
+        ColorSupport.ApplyOpacity(c,
+            fillOpacity: fill?.Alpha,
+            strokeOpacity: stroke?.Alpha);
+
         var hasFill = !string.IsNullOrWhiteSpace(r.Fill);
         var hasStroke = !string.IsNullOrWhiteSpace(r.Stroke) || (r.StrokeWidth is not null && r.StrokeWidth.Value > 0);
 
         if (hasFill && hasStroke) c.FillStroke();
         else if (hasFill) c.Fill();
         else c.Stroke();
+
+        c.RestoreState();
     }
 
     private static void DrawLine(PdfCanvas c, PointD o, LinePrimitiveSpec l)
     {
+        c.SaveState();
+
         var x1 = (float)(o.X + l.From[0]);
         var y1 = (float)(o.Y + l.From[1]);
         var x2 = (float)(o.X + l.To[0]);
@@ -475,19 +494,36 @@ public static class PrimitiveRenderer
         if (l.StrokeWidth is not null && l.StrokeWidth.Value > 0)
             c.SetLineWidth((float)l.StrokeWidth.Value);
 
+        var stroke = ColorSupport.Parse(l.Stroke);
+        if (stroke is not null)
+        {
+            c.SetStrokeColor(stroke.Value.Color);
+            ColorSupport.ApplyOpacity(c, fillOpacity: null, strokeOpacity: stroke.Value.Alpha);
+        }
+
         c.MoveTo(x1, y1);
         c.LineTo(x2, y2);
         c.Stroke();
+
+        c.RestoreState();
     }
 
     private static void DrawBarcode(PdfCanvas c, PdfDocument pdf, PointD o, BarcodePrimitiveSpec bc)
     {
+        c.SaveState();
+
         var x = (float)(o.X + bc.Rect[0]);
         var y = (float)(o.Y + bc.Rect[1]);
         var w = (float)bc.Rect[2];
         var h = (float)bc.Rect[3];
 
         var target = new Rectangle(x, y, w, h);
+
+        // Optional background/border
+        ColorSupport.DrawBackgroundAndBorder(c, target, bc.Fill, bc.Stroke, bc.StrokeWidth);
+
+        var fg = ColorSupport.Parse(bc.Color) ?? new ParsedColor(ColorConstants.BLACK, 1f);
+        ColorSupport.ApplyOpacity(c, fillOpacity: fg.Alpha, strokeOpacity: fg.Alpha);
 
         if (bc.Kind == BarcodeKind.qr)
         {
@@ -512,10 +548,11 @@ public static class PrimitiveRenderer
             }
 
             var qr = hints is null ? new BarcodeQRCode(bc.Value) : new BarcodeQRCode(bc.Value, hints);
-            var xobj = qr.CreateFormXObject(ColorConstants.BLACK, pdf);
+            var xobj = qr.CreateFormXObject(fg.Color, pdf);
 
             // Fit into target rect (keeps proportions)
             c.AddXObjectFittedIntoRectangle(xobj, target);
+            c.RestoreState();
             return;
         }
 
@@ -536,8 +573,9 @@ public static class PrimitiveRenderer
             // Ensure a font is present for the human-readable line
             b128.SetFont(!showText ? null : PdfFontFactory.CreateFont(StandardFonts.HELVETICA));
 
-            var xobj = b128.CreateFormXObject(ColorConstants.BLACK, ColorConstants.BLACK, pdf);
+            var xobj = b128.CreateFormXObject(fg.Color, fg.Color, pdf);
             c.AddXObjectFittedIntoRectangle(xobj, target);
+            c.RestoreState();
             return;
         }
 
@@ -546,6 +584,8 @@ public static class PrimitiveRenderer
 
     private static void DrawImage(PdfCanvas c, PointD o, ImagePrimitiveSpec img)
     {
+        c.SaveState();
+
         if (string.IsNullOrWhiteSpace(img.Base64))
             throw new FormatException("Image primitive: base64 is required.");
 
@@ -575,11 +615,27 @@ public static class PrimitiveRenderer
         var h = (float)img.Rect[3];
 
         var r = new Rectangle(x, y, w, h);
+
+        // Optional background/border
+        ColorSupport.DrawBackgroundAndBorder(c, r, img.Fill, img.Stroke, img.StrokeWidth);
+
         c.AddImageFittedIntoRectangle(data, r, true);
+
+        c.RestoreState();
     }
 
     private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t)
     {
+        var pdfCanvas = canvas.GetPdfCanvas();
+        pdfCanvas.SaveState();
+
+        var textColor = ColorSupport.Parse(t.Color);
+        if (textColor is not null)
+        {
+            // iText layout doesn't reliably support alpha via font color, so alpha is applied via extGState.
+            ColorSupport.ApplyOpacity(pdfCanvas, fillOpacity: textColor.Value.Alpha, strokeOpacity: null);
+        }
+
         if (t.At is not null)
         {
             var x = (float)(o.X + t.At[0]);
@@ -590,6 +646,9 @@ public static class PrimitiveRenderer
             p.SetMargin(0);
             p.SetPadding(0);
 
+            if (textColor is not null)
+                p.SetFontColor(textColor.Value.Color);
+
             var fontSize = (float)(t.Size ?? 12);
             p.SetFontSize(fontSize);
 
@@ -598,6 +657,7 @@ public static class PrimitiveRenderer
             p.SetFixedPosition(x, y, w);
 
             canvas.Add(p);
+            pdfCanvas.RestoreState();
             return;
         }
 
@@ -610,6 +670,9 @@ public static class PrimitiveRenderer
 
             var p = new Paragraph(t.Value);
             p.SetFont(PrimitiveBoundsCalculator.ResolveFont(t.Font));
+
+            if (textColor is not null)
+                p.SetFontColor(textColor.Value.Color);
 
             if (t.Size is not null)
                 p.SetFontSize((float)t.Size.Value);
@@ -658,7 +721,6 @@ public static class PrimitiveRenderer
                 _ => x
             };
 
-            var pdfCanvas = canvas.GetPdfCanvas();
             pdfCanvas.SaveState();
             pdfCanvas.Rectangle(x, y, w, h);
             pdfCanvas.Clip();
@@ -671,10 +733,91 @@ public static class PrimitiveRenderer
             }
 
             pdfCanvas.RestoreState();
+            pdfCanvas.RestoreState();
             return;
         }
 
+        pdfCanvas.RestoreState();
         throw new InvalidOperationException("Text primitive must have either 'at' or 'rect'.");
+    }
+
+    private readonly record struct ParsedColor(Color Color, float Alpha);
+
+    private static class ColorSupport
+    {
+        public static ParsedColor? Parse(string? hex)
+        {
+            if (string.IsNullOrWhiteSpace(hex))
+                return null;
+
+            var s = hex.Trim();
+
+            // Required format: #RRGGBBAA ("#rgba" in spec wording)
+            if (s.Length != 9 || s[0] != '#')
+                throw new FormatException($"Color must be in format #RRGGBBAA, got '{hex}'");
+
+            static byte ParseByte(string src, int start)
+            {
+                if (!byte.TryParse(src.AsSpan(start, 2), System.Globalization.NumberStyles.HexNumber, null, out var b))
+                    throw new FormatException($"Color must be in format #RRGGBBAA, got '{src}'");
+                return b;
+            }
+
+            var r = ParseByte(s, 1);
+            var g = ParseByte(s, 3);
+            var b = ParseByte(s, 5);
+            var a = ParseByte(s, 7);
+
+            var alpha = a / 255f;
+            return new ParsedColor(new DeviceRgb(r, g, b), alpha);
+        }
+
+        public static void ApplyOpacity(PdfCanvas c, float? fillOpacity, float? strokeOpacity)
+        {
+            var fo = fillOpacity ?? 1f;
+            var so = strokeOpacity ?? 1f;
+
+            if (fo >= 0.999f && so >= 0.999f)
+                return;
+
+            var gs = new PdfExtGState();
+            gs.SetFillOpacity(fo);
+            gs.SetStrokeOpacity(so);
+            c.SetExtGState(gs);
+        }
+
+        public static void DrawBackgroundAndBorder(PdfCanvas c, Rectangle r, string? fillHex, string? strokeHex, double? strokeWidth)
+        {
+            var fill = Parse(fillHex);
+            var stroke = Parse(strokeHex);
+            var sw = strokeWidth ?? 0;
+
+            var hasFill = fill is not null;
+            var hasStroke = (stroke is not null) || sw > 0;
+
+            if (!hasFill && !hasStroke)
+                return;
+
+            c.SaveState();
+
+            if (sw > 0)
+                c.SetLineWidth((float)sw);
+
+            if (fill is not null)
+                c.SetFillColor(fill.Value.Color);
+            if (stroke is not null)
+                c.SetStrokeColor(stroke.Value.Color);
+
+            ApplyOpacity(c, fill?.Alpha, stroke?.Alpha);
+
+            c.Rectangle(r);
+
+            if (hasFill && hasStroke) c.FillStroke();
+            else if (hasFill) c.Fill();
+            else c.Stroke();
+
+            c.RestoreState();
+        }
     }
 
     private readonly record struct ParagraphMetrics(float Height);

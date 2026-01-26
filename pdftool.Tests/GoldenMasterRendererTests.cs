@@ -33,8 +33,8 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,240,60], "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "font": "Times-Roman", "value": "Rect + text(at)" }
+                { "type": "rect", "rect": [0,0,240,60], "stroke": "#ff0000ff", "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "font": "Times-Roman", "color": "#0000ffff", "value": "Rect + text(at)" }
               ]
             }
           ]
@@ -54,8 +54,8 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "font": "Helvetica-Bold", "value": "cornerRadius=12" }
+                { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "fill": "#00ff0020", "stroke": "#00ff00ff", "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "font": "Helvetica-Bold", "color": "#00aa00ff", "value": "cornerRadius=12" }
               ]
             }
           ]
@@ -75,13 +75,14 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "fill": "#ffff0020", "stroke": "#000000ff", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,70],
                   "wrap": true,
                   "size": 11,
                   "font": "Courier",
+                  "color": "#000000ff",
                   "value": "This is a long text that should wrap automatically inside a fixed rectangle."
                 }
               ]
@@ -103,14 +104,15 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,140] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#00ffffff", "stroke": "#0000ffff", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
-                  "font": "Times-Italic",
                   "valign": "top",
+                  "font": "Times-Italic",
+                  "color": "#0000ffff",
                   "value": "VAlign TOP\nLine 2\nLine 3"
                 }
               ]
@@ -132,14 +134,15 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,140] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#ff00ff20", "stroke": "#ff00ffff", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
-                  "font": "Courier-Bold",
                   "valign": "middle",
+                  "font": "Courier-Bold",
+                  "color": "#ff00ffff",
                   "value": "VAlign MIDDLE\nLine 2\nLine 3"
                 }
               ]
@@ -161,14 +164,15 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,140] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#ff000020", "stroke": "#ff0000ff", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
-                  "font": "Helvetica-Oblique",
                   "valign": "bottom",
+                  "font": "Helvetica-Oblique",
+                  "color": "#ff0000ff",
                   "value": "VAlign BOTTOM\nLine 2\nLine 3"
                 }
               ]
@@ -190,8 +194,8 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
               "primitives": [
-                { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
-                { "type": "text", "at": [0,14], "size": 11, "font": "Courier-Bold", "value": "strokeWidth = 6pt" }
+                { "type": "line", "from": [0,0], "to": [260,0], "stroke": "#ff8800ff", "strokeWidth": 6 },
+                { "type": "text", "at": [0,14], "size": 11, "color": "#ff8800ff", "value": "strokeWidth = 6pt" }
               ]
             }
           ]
@@ -212,7 +216,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,200] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "font": "Times-BoldItalic", "halign": "left", "valign": "middle", "value": "LEFT" }
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "left", "valign": "middle", "value": "LEFT" }
               ]
             }
           ]
@@ -233,7 +237,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,200] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "font": "Courier-Oblique", "halign": "center", "valign": "middle", "value": "CENTER" }
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "center", "valign": "middle", "value": "CENTER" }
               ]
             }
           ]
@@ -254,7 +258,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,140] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "font": "Helvetica-BoldOblique", "halign": "right", "valign": "middle", "value": "RIGHT" }
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "right", "valign": "middle", "value": "RIGHT" }
               ]
             }
           ]
@@ -279,9 +283,9 @@ public void Case20_ImageRect_PngBase64_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,220,90], "cornerRadius": 10, "strokeWidth": 1 },
-            { "type": "image", "rect": [12,12,66,66], "base64": "__PNG__" },
-            { "type": "text", "at": [90,40], "size": 11, "value": "PNG base64 image" }
+            { "type": "rect", "rect": [0,0,220,90], "cornerRadius": 10, "fill": "#00000010", "stroke": "#222222ff", "strokeWidth": 1 },
+            { "type": "image", "rect": [12,12,66,66], "fill": "#00ffffff", "stroke": "#ff00ffff", "strokeWidth": 2, "base64": "__PNG__" },
+            { "type": "text", "at": [90,40], "size": 11, "color": "#222222ff", "value": "PNG base64 image" }
           ]
         }
       ]
@@ -306,9 +310,9 @@ public void Case23_BarcodeQr_EcL_TopRight_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "strokeWidth": 1 },
-            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "value": "HELLO-QR-L", "options": { "ecLevel": "L" } },
-            { "type": "text", "at": [110,58], "size": 11, "value": "QR EC=L" }
+            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "fill": "#ffffffcc", "stroke": "#000000ff", "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "fill": "#ffffffff", "stroke": "#00000040", "strokeWidth": 1, "color": "#0000ffff", "value": "HELLO-QR-L", "options": { "ecLevel": "L" } },
+            { "type": "text", "at": [110,58], "size": 11, "color": "#0000ffff", "value": "QR EC=L" }
           ]
         }
       ]
@@ -330,9 +334,9 @@ public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "strokeWidth": 1 },
-            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "value": "HELLO-QR-Q", "options": { "ecLevel": "Q" } },
-            { "type": "text", "at": [110,58], "size": 11, "value": "QR EC=Q" }
+            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "fill": "#00ff0020", "stroke": "#00ff00ff", "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "fill": "#ffffffff", "stroke": "#00ff00ff", "strokeWidth": 1, "color": "#00aa00ff", "value": "HELLO-QR-Q", "options": { "ecLevel": "Q" } },
+            { "type": "text", "at": [110,58], "size": 11, "color": "#00aa00ff", "value": "QR EC=Q" }
           ]
         }
       ]
@@ -354,9 +358,9 @@ public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,340,120], "cornerRadius": 10, "strokeWidth": 1 },
-            { "type": "barcode", "kind": "code128", "rect": [12,50,316,55], "value": "ABC-123-XYZ", "options": { "showText": true } },
-            { "type": "text", "at": [12,18], "size": 11, "value": "Code128 showText=true" }
+            { "type": "rect", "rect": [0,0,340,120], "cornerRadius": 10, "fill": "#0000ff10", "stroke": "#0000ffff", "strokeWidth": 1 },
+            { "type": "barcode", "kind": "code128", "rect": [12,50,316,55], "fill": "#ffffffff", "stroke": "#0000ffff", "strokeWidth": 1, "color": "#0000ffff", "value": "ABC-123-XYZ", "options": { "showText": true } },
+            { "type": "text", "at": [12,18], "size": 11, "color": "#0000ffff", "value": "Code128 showText=true" }
           ]
         }
       ]
