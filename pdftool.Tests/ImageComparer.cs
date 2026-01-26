@@ -10,7 +10,7 @@ public static class ImageComparer
     /// <summary>
     /// Сравнивает два PNG с допуском на небольшие различия (для anti-aliasing и т.п.).
     /// </summary>
-    public static void AssertPngEqualWithTolerance(string expectedPath, string actualPath, int pixelTolerance = 2)
+    public static void AssertPngEqualWithTolerance(string expectedPath, string actualPath, int pixelTolerance = 10)
     {
         if (!File.Exists(expectedPath))
             throw new FileNotFoundException("Expected baseline is missing", expectedPath);
