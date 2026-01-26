@@ -727,7 +727,6 @@ public static class PrimitiveRenderer
                     TextAlign.left => TextAlignment.LEFT,
                     TextAlign.center => TextAlignment.CENTER,
                     TextAlign.right => TextAlignment.RIGHT,
-                    TextAlign.justify => TextAlignment.JUSTIFIED,
                     _ => TextAlignment.LEFT
                 };
                 p.SetTextAlignment(align);

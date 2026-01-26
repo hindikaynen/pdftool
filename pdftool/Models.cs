@@ -14,7 +14,9 @@ public sealed class OverlaySpec
     [JsonPropertyName("name")]
     public required string Name { get; init; }
 
-    // Pages range string, e.g. "1-3,7-last", "all"
+    /// <summary>
+    /// Page range string, e.g. "1-3,7-last, all"
+    /// </summary>
     [JsonPropertyName("pages")]
     public required string Pages { get; init; }
 
@@ -25,38 +27,58 @@ public sealed class OverlaySpec
     public List<PrimitiveSpec> Primitives { get; init; } = new();
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum PlacementMode { corner, textAnchor }
+[JsonConverter(typeof(JsonStringEnumConverter<PlacementMode>))]
+public enum PlacementMode
+{
+    corner,
+    textAnchor,
+}
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum PageCorner { topLeft, topRight, bottomLeft, bottomRight }
+[JsonConverter(typeof(JsonStringEnumConverter<PageCorner>))]
+public enum PageCorner
+{
+    topLeft,
+    topRight,
+    bottomLeft,
+    bottomRight
+}
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum MarkerOccurrence { first, last, all }
+[JsonConverter(typeof(JsonStringEnumConverter<MarkerOccurrence>))]
+public enum MarkerOccurrence
+{
+    first,
+    last,
+    all,
+}
 
 public sealed class PlacementSpec
 {
     [JsonPropertyName("mode")]
     public required PlacementMode Mode { get; init; }
 
-    // Corner mode
+    /// <summary>
+    /// Corner mode
+    /// </summary>
     [JsonPropertyName("corner")]
     public PageCorner? Corner { get; init; }
 
-    // Marker mode
+    /// <summary>
+    /// Marker mode
+    /// </summary>
     [JsonPropertyName("text")]
     public string? SearchText { get; init; }
 
     [JsonPropertyName("occurrence")]
     public MarkerOccurrence Occurrence { get; init; } = MarkerOccurrence.first;
 
-    // Common offset [dx, dy] in pt
+    /// <summary>
+    /// Common offset [dx, dy] in pt
+    /// </summary>
     [JsonPropertyName("offset")]
     public double[]? Offset { get; init; }
 }
 
-// -------- Primitives (polymorphic via "type") --------
-
+/// -------- Primitives: polymorphic via type --------
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(TextPrimitiveSpec), "text")]
 [JsonDerivedType(typeof(RectPrimitiveSpec), "rect")]
@@ -65,23 +87,39 @@ public sealed class PlacementSpec
 [JsonDerivedType(typeof(PolylinePrimitiveSpec), "polyline")]
 [JsonDerivedType(typeof(ImagePrimitiveSpec), "image")]
 [JsonDerivedType(typeof(BarcodePrimitiveSpec), "barcode")]
-public abstract class PrimitiveSpec;
+public abstract class PrimitiveSpec
+{
+}
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum TextAlign { left, center, right, justify }
+[JsonConverter(typeof(JsonStringEnumConverter<TextAlign>))]
+public enum TextAlign
+{
+    left,
+    center,
+    right
+}
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum HorizontalAlign { left, center, right }
+[JsonConverter(typeof(JsonStringEnumConverter<HorizontalAlign>))]
+public enum HorizontalAlign
+{
+    left,
+    center,
+    right,
+}
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum VerticalAlign { top, middle, bottom }
+[JsonConverter(typeof(JsonStringEnumConverter<VerticalAlign>))]
+public enum VerticalAlign
+{
+    top,
+    middle,
+    bottom,
+}
 
 public sealed class TextPrimitiveSpec : PrimitiveSpec
 {
-    // Either:
-    //   at: [x,y]
-    // Or:
-    //   rect: [x,y,w,h]
+    /// <summary>
+    /// Either [at: x,y] Or [rect: x,y,w,h]
+    /// </summary>
     [JsonPropertyName("at")]
     public double[]? At { get; init; }
 
@@ -115,7 +153,9 @@ public sealed class TextPrimitiveSpec : PrimitiveSpec
 
 public sealed class RectPrimitiveSpec : PrimitiveSpec
 {
-    // rect: [x,y,w,h]
+    /// <summary>
+    /// rect [x,y,w,h]
+    /// </summary>
     [JsonPropertyName("rect")]
     public required double[] Rect { get; init; }
 
@@ -132,10 +172,11 @@ public sealed class RectPrimitiveSpec : PrimitiveSpec
     public double? StrokeWidth { get; init; }
 }
 
-
 public sealed class EllipsePrimitiveSpec : PrimitiveSpec
 {
-    // rect: [x,y,w,h] (bounding box of the ellipse)
+    /// <summary>
+    /// rect [x,y,w,h] — bounding box of the ellipse
+    /// </summary>
     [JsonPropertyName("rect")]
     public required double[] Rect { get; init; }
 
@@ -166,7 +207,9 @@ public sealed class LinePrimitiveSpec : PrimitiveSpec
 
 public sealed class PolylinePrimitiveSpec : PrimitiveSpec
 {
-    // points: [[x,y], [x,y], ...]
+    /// <summary>
+    /// points [[x,y], [x,y], ...]
+    /// </summary>
     [JsonPropertyName("points")]
     public required double[][] Points { get; init; }
 
@@ -177,40 +220,54 @@ public sealed class PolylinePrimitiveSpec : PrimitiveSpec
     public double? StrokeWidth { get; init; }
 }
 
-class ImagePrimitiveSpec : PrimitiveSpec
+public sealed class ImagePrimitiveSpec : PrimitiveSpec
 {
     [JsonPropertyName("rect")]
     public required double[] Rect { get; init; }
+
     [JsonPropertyName("base64")]
     public required string Base64 { get; init; }
+
     [JsonPropertyName("fill")]
     public string? Fill { get; init; }
+
     [JsonPropertyName("stroke")]
     public string? Stroke { get; init; }
+
     [JsonPropertyName("strokeWidth")]
     public double? StrokeWidth { get; init; }
 }
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum BarcodeKind { qr, code128 }
+[JsonConverter(typeof(JsonStringEnumConverter<BarcodeKind>))]
+public enum BarcodeKind
+{
+    qr,
+    code128,
+}
 
 public sealed class BarcodePrimitiveSpec : PrimitiveSpec
 {
     [JsonPropertyName("kind")]
     public required BarcodeKind Kind { get; init; }
 
-    // rect: [x,y,w,h]
+    /// <summary>
+    /// rect [x,y,w,h]
+    /// </summary>
     [JsonPropertyName("rect")]
     public required double[] Rect { get; init; }
 
     [JsonPropertyName("value")]
     public required string Value { get; init; }
 
-    // Arbitrary per-kind options
+    /// <summary>
+    /// Arbitrary per-kind options
+    /// </summary>
     [JsonPropertyName("options")]
     public JsonElement? Options { get; init; }
 
-    // Optional coloring and border/background
+    /// <summary>
+    /// Optional coloring and border/background
+    /// </summary>
     [JsonPropertyName("color")]
     public string? Color { get; init; }
 
