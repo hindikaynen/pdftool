@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PROJECT_PATH: src/PdfTool/PdfTool.csproj
-      TEST_PROJECT_PATH: src/PdfTool.Tests/PdfTool.Tests.csproj
+      PROJECT_PATH: pdftool/PdfTool.csproj
+      TEST_PROJECT_PATH: pdftool.Tests/pdftool.Tests.csproj
 
     steps:
       - name: Checkout
@@ -55,11 +55,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pdftool-win-x64
-          path: src/PdfTool/bin/Release/net8.0/win-x64/publish/
+          path: pdftool/bin/Release/net8.0/win-x64/publish/
 
       # Upload linux-x64 artifact
       - name: Upload artifact (linux-x64)
         uses: actions/upload-artifact@v4
         with:
           name: pdftool-linux-x64
-          path: src/PdfTool/bin/Release/net8.0/linux-x64/publish/
+          path: pdftool/bin/Release/net8.0/linux-x64/publish/
