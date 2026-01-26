@@ -23,8 +23,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore
-        run: dotnet restore $PROJECT_PATH
+      - name: Restore win-x64
+        run: dotnet restore $PROJECT_PATH -r win-x64
+
+      - name: Restore linux-x64
+        run: dotnet restore $PROJECT_PATH -r linux-x64
 
       - name: Build (Release)
         run: dotnet build $PROJECT_PATH --configuration Release --no-restore
