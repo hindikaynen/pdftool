@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_PATH: src/PdfTool/PdfTool.csproj
+      TEST_PROJECT_PATH: src/PdfTool.Tests/PdfTool.Tests.csproj
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore $PROJECT_PATH
+
+      - name: Build (Release)
+        run: dotnet build $PROJECT_PATH --configuration Release --no-restore
+
+      - name: Run Tests
+        run: dotnet test $TEST_PROJECT_PATH --configuration Release --no-build --verbosity normal
+
+      # Publish win-x64 single-file
+      - name: Publish win-x64
+        run: >
+          dotnet publish $PROJECT_PATH
+          --configuration Release
+          --runtime win-x64
+          /p:PublishProfile=win-x64
+          --no-build
+
+      # Publish linux-x64
+      - name: Publish linux-x64
+        run: >
+          dotnet publish $PROJECT_PATH
+          --configuration Release
+          --runtime linux-x64
+          /p:PublishProfile=linux-x64
+          --no-build
+
+      # Upload win-x64 artifact
+      - name: Upload artifact (win-x64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftool-win-x64
+          path: src/PdfTool/bin/Release/net8.0/win-x64/publish/
+
+      # Upload linux-x64 artifact
+      - name: Upload artifact (linux-x64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftool-linux-x64
+          path: src/PdfTool/bin/Release/net8.0/linux-x64/publish/
