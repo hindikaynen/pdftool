@@ -239,7 +239,6 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
   "wrap": true,              // Перенос строк (только с rect, опционально)
   "halign": "left",          // Горизонтальное выравнивание (только с rect)
   "valign": "top",           // Вертикальное выравнивание (только с rect)
-  "align": "left"            // Legacy поле выравнивания (опционально)
 }
 ```
 
@@ -268,7 +267,6 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
 | `wrap` | boolean | Только с `rect` | Включить перенос слов. Требует `rect` |
 | `halign` | string | Только с `rect` | Горизонтальное выравнивание: `left`, `center`, `right` |
 | `valign` | string | Только с `rect` | Вертикальное выравнивание: `top`, `middle`, `bottom` |
-| `align` | string | Legacy | `left`, `center`, `right` |
 
 ## Режимы позиционирования
 
