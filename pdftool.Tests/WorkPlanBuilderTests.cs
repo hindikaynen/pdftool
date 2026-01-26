@@ -1,12 +1,11 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace PdfTool.Tests;
 
-[TestFixture]
 public class WorkPlanBuilderTests
 {
-    [Test]
+    [Fact]
     public void Build_ResolvesLast_AndReturnsPages()
     {
         var spec = new DocumentSpec
@@ -22,13 +21,12 @@ public class WorkPlanBuilderTests
                 }
             ]
         };
-
         var plan = WorkPlanBuilder.Build(spec, totalPages: 5);
-        Assert.That(plan, Has.Count.EqualTo(1));
-        Assert.That(plan[0].Pages, Is.EqualTo(new[] { 2, 3, 4, 5 }));
+        Assert.Single(plan);
+        Assert.Equal(new[] { 2, 3, 4, 5 }, plan[0].Pages);
     }
 
-    [Test]
+    [Fact]
     public void Build_OutOfBoundsPages_Throws()
     {
         var spec = new DocumentSpec
@@ -44,11 +42,10 @@ public class WorkPlanBuilderTests
                 }
             ]
         };
-
         Assert.Throws<FormatException>(() => WorkPlanBuilder.Build(spec, totalPages: 3));
     }
 
-    [Test]
+    [Fact]
     public void Build_InvalidOverlay_Throws()
     {
         var spec = new DocumentSpec
@@ -65,7 +62,6 @@ public class WorkPlanBuilderTests
                 }
             ]
         };
-
         Assert.Throws<FormatException>(() => WorkPlanBuilder.Build(spec, totalPages: 1));
     }
 }

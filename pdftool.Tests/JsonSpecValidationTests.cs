@@ -1,14 +1,13 @@
 using System;
 using System.IO;
 using System.Text;
-using NUnit.Framework;
+using Xunit;
 
 namespace PdfTool.Tests;
 
-[TestFixture]
 public class JsonSpecValidationTests
 {
-    [Test]
+    [Fact]
     public void ParseAndValidate_MinimalCornerOverlay_Ok()
     {
         var json = """
@@ -29,12 +28,13 @@ public class JsonSpecValidationTests
         var path = WriteTempJson(json);
         var spec = JsonSpecParser.Parse(path);
 
-        Assert.That(spec.Overlays, Has.Count.EqualTo(1));
+        Assert.Single(spec.Overlays);
         PagesRangeParser.ValidateSyntax(spec.Overlays[0].Pages);
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
+        JsonSpecValidator.ValidateOverlay(spec.Overlays[0]);
+
     }
 
-    [Test]
+    [Fact]
     public void ValidatePlacement_CornerRequiresCorner()
     {
         var json = """
@@ -56,7 +56,7 @@ public class JsonSpecValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
     }
 
-    [Test]
+    [Fact]
     public void ValidatePlacement_TextAnchorRequiresText()
     {
         var json = """
@@ -78,7 +78,7 @@ public class JsonSpecValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_RectCornerRadius_MustBeNonNegative()
     {
         var json = """
@@ -102,7 +102,7 @@ public class JsonSpecValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_ImageBase64_Valid()
     {
         var json = """
@@ -127,10 +127,10 @@ public class JsonSpecValidationTests
         var path = WriteTempJson(json);
         var spec = JsonSpecParser.Parse(path);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
+        JsonSpecValidator.ValidateOverlay(spec.Overlays[0]);
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_ImageBase64_Invalid_Fails()
     {
         var json = """
@@ -158,7 +158,7 @@ public class JsonSpecValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_TextWrap_RequiresRect()
     {
         var json = """
@@ -182,7 +182,7 @@ public class JsonSpecValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_TextBlock_WithWrap_Ok()
     {
         var json = """
@@ -203,10 +203,10 @@ public class JsonSpecValidationTests
         var path = WriteTempJson(json);
         var spec = JsonSpecParser.Parse(path);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
+        JsonSpecValidator.ValidateOverlay(spec.Overlays[0]);
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_BarcodeQr_Valid()
     {
         var json = """
@@ -233,10 +233,10 @@ public class JsonSpecValidationTests
         var path = WriteTempJson(json);
         var spec = JsonSpecParser.Parse(path);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
+        JsonSpecValidator.ValidateOverlay(spec.Overlays[0]);
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_BarcodeQr_InvalidEcLevel_Fails()
     {
         var json = """
@@ -266,7 +266,7 @@ public class JsonSpecValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
     }
 
-    [Test]
+    [Fact]
     public void ValidatePrimitive_BarcodeCode128_ShowTextMustBeBool()
     {
         var json = """
@@ -298,7 +298,7 @@ public class JsonSpecValidationTests
 
 
 
-[Test]
+[Fact]
 public void ValidatePrimitive_TextAtAndRectTogether_Fails()
 {
     var json = """
@@ -322,7 +322,7 @@ public void ValidatePrimitive_TextAtAndRectTogether_Fails()
     Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
 }
 
-[Test]
+[Fact]
 public void ValidatePrimitive_TextMissingAtAndRect_Fails()
 {
     var json = """
@@ -346,7 +346,7 @@ public void ValidatePrimitive_TextMissingAtAndRect_Fails()
     Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(spec.Overlays[0]));
 }
 
-[Test]
+[Fact]
 public void Parse_ImageWithoutData_ShouldFailAtParseOrValidation()
 {
     var json = """
@@ -374,11 +374,15 @@ public void Parse_ImageWithoutData_ShouldFailAtParseOrValidation()
     catch (Exception ex)
     {
         // System.Text.Json may throw JsonException due to required members
-        Assert.That(ex, Is.InstanceOf<System.Text.Json.JsonException>().Or.InstanceOf<FormatException>());
+        Assert.True(
+            ex is System.Text.Json.JsonException || ex is FormatException,
+            $"Expected JsonException or FormatException, but got {ex.GetType().FullName}"
+        );
+
     }
 }
 
-[Test]
+[Fact]
 public void Parse_UnknownPrimitiveType_ShouldFailAtParse()
 {
     var json = """

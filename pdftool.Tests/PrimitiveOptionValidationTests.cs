@@ -1,17 +1,16 @@
-using NUnit.Framework;
 using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Xunit;
 
 namespace PdfTool.Tests;
 
-[TestFixture]
 public class PrimitiveOptionValidationTests
 {
     // ---------------- Rect ----------------
 
-    [Test]
+    [Fact]
     public void Rect_Valid_Minimal_Passes()
     {
         var ov = ParseFirstOverlay("""
@@ -29,10 +28,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Rect_NegativeWidth_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -53,7 +52,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Rect_NegativeHeight_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -74,7 +73,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Rect_StrokeWidthNegative_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -95,7 +94,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Rect_CornerRadiusNegative_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -116,7 +115,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Rect_RectArrayWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -139,7 +138,7 @@ public class PrimitiveOptionValidationTests
 
     // ---------------- Line ----------------
 
-    [Test]
+    [Fact]
     public void Line_Valid_Minimal_Passes()
     {
         var ov = ParseFirstOverlay("""
@@ -157,10 +156,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Line_FromWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -181,7 +180,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Line_ToWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -202,7 +201,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Line_StrokeWidthNegative_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -225,7 +224,7 @@ public class PrimitiveOptionValidationTests
 
     // ---------------- Text ----------------
 
-    [Test]
+    [Fact]
     public void Text_At_Valid_Passes()
     {
         var ov = ParseFirstOverlay("""
@@ -243,10 +242,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Text_Rect_Wrap_Valid_Passes()
     {
         var ov = ParseFirstOverlay("""
@@ -264,10 +263,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Text_MustHaveExactlyOneOfAtOrRect_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -288,7 +287,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_AtAndRectTogether_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -309,7 +308,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_AtWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -330,7 +329,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_RectWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -351,7 +350,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_RectNegativeWidth_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -372,7 +371,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_RectNegativeHeight_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -393,7 +392,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_SizeMustBePositive_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -414,7 +413,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_ValueMustBeNonEmpty_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -435,7 +434,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Text_WrapTrueRequiresRect_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -458,7 +457,7 @@ public class PrimitiveOptionValidationTests
 
     // ---------------- Image ----------------
 
-    [Test]
+    [Fact]
     public void Image_Valid_PngBase64_Passes()
     {
         // 1x1 transparent PNG
@@ -484,10 +483,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Image_RectWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -508,7 +507,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Image_NegativeWidthHeight_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -529,7 +528,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Image_Base64Missing_Fails()
     {
         // NOTE: 'base64' is required by the model.
@@ -549,7 +548,7 @@ public class PrimitiveOptionValidationTests
          """));
     }
 
-    [Test]
+    [Fact]
     public void Image_Base64Incorrect_Fails()
     {
         // NOTE: 'base64' is required by the model
@@ -573,7 +572,7 @@ public class PrimitiveOptionValidationTests
 
     // ---------------- Barcode ----------------
 
-    [Test]
+    [Fact]
     public void Barcode_Qr_Valid_NoOptions_Passes()
     {
         var ov = ParseFirstOverlay("""
@@ -591,10 +590,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Barcode_Code128_Valid_ShowTextBool_Passes()
     {
         var ov = ParseFirstOverlay("""
@@ -618,10 +617,10 @@ public class PrimitiveOptionValidationTests
         }
         """);
 
-        Assert.DoesNotThrow(() => JsonSpecValidator.ValidateOverlay(ov));
+        JsonSpecValidator.ValidateOverlay(ov);
     }
 
-    [Test]
+    [Fact]
     public void Barcode_RectWrongLen_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -642,7 +641,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Barcode_NegativeWidthHeight_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -663,7 +662,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Barcode_ValueMustBeNonEmpty_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -684,7 +683,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Barcode_OptionsMustBeObject_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -711,7 +710,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Barcode_Qr_EcLevelMustBeString_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -738,7 +737,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Barcode_Qr_EcLevelMustBeOneOfAllowed_Fails()
     {
         var ov = ParseFirstOverlay("""
@@ -765,7 +764,7 @@ public class PrimitiveOptionValidationTests
         Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
     }
 
-    [Test]
+    [Fact]
     public void Barcode_Code128_ShowTextMustBeBoolean_Fails()
     {
         var ov = ParseFirstOverlay("""

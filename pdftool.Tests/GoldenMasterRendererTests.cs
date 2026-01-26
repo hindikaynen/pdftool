@@ -1,12 +1,12 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
-using NUnit.Framework;
 using iText.Kernel.Pdf;
+using Xunit;
 
 namespace PdfTool.Tests;
 
-[TestFixture]
 public class GoldenMasterRendererTests
 {
     // NOTE:
@@ -21,7 +21,7 @@ public class GoldenMasterRendererTests
     // - bottomLeft:  [right, up]
     // - bottomRight: [left,  up]
 
-    [Test]
+    [Fact]
     // Primitive: rect (stroke) + text(at) at TOP-LEFT
     public void Case01_RectAndTextAt_Page1()
     {
@@ -42,7 +42,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: rect with cornerRadius + text(at) at TOP-RIGHT
     public void Case02_RectCornerRadius_Page1()
     {
@@ -63,7 +63,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with wrap=true at BOTTOM-LEFT
     public void Case03_TextRect_Wrap_Page1()
     {
@@ -92,7 +92,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with valign=top at TOP-LEFT
     public void Case06_TextRect_VAlignTop_Page1()
     {
@@ -122,7 +122,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with valign=middle at TOP-RIGHT
     public void Case07_TextRect_VAlignMiddle_Page1()
     {
@@ -152,7 +152,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with valign=bottom at BOTTOM-LEFT
     public void Case08_TextRect_VAlignBottom_Page1()
     {
@@ -182,7 +182,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: line with strokeWidth at BOTTOM-RIGHT
     public void Case04_Line_StrokeWidth_Page1()
     {
@@ -203,7 +203,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: ellipse (fill+stroke) at TOP-LEFT
     public void Case05_Ellipse_FillStroke_Page1()
     {
@@ -225,7 +225,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with halign=left at TOP-LEFT
     public void Case12_TextRect_HAlignLeft_Page1()
     {
@@ -246,7 +246,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with halign=center at TOP-RIGHT
     public void Case13_TextRect_HAlignCenter_Page1()
     {
@@ -267,7 +267,7 @@ public class GoldenMasterRendererTests
         """);
     }
 
-    [Test]
+    [Fact]
     // Primitive: text(rect) with halign=right at BOTTOM-RIGHT
     public void Case14_TextRect_HAlignRight_Page1()
     {
@@ -290,7 +290,7 @@ public class GoldenMasterRendererTests
 
 
 
-[Test]
+[Fact]
 // Primitive: image (base64 PNG) in rect (fit=contain) at TOP-LEFT
 public void Case20_ImageRect_PngBase64_Page1()
 {
@@ -320,7 +320,7 @@ public void Case20_ImageRect_PngBase64_Page1()
 
 
 
-[Test]
+[Fact]
 // Primitive: barcode.qr with EC level L, placed at TOP-RIGHT
 public void Case23_BarcodeQr_EcL_TopRight_Page1()
 {
@@ -344,7 +344,7 @@ public void Case23_BarcodeQr_EcL_TopRight_Page1()
     RunSinglePage(json);
 }
 
-[Test]
+[Fact]
 // Primitive: barcode.qr with EC level Q, placed at BOTTOM-LEFT
 public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
 {
@@ -368,7 +368,7 @@ public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
     RunSinglePage(json);
 }
 
-[Test]
+[Fact]
 // Primitive: barcode.code128 with human-readable text ON, placed at BOTTOM-RIGHT
 public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
 {
@@ -392,7 +392,7 @@ public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
     RunSinglePage(json);
 }
 
-[Test]
+[Fact]
 // Primitive: barcode.code128 narrow rect (stress fit into small width), showText OFF
 public void Case26_BarcodeCode128_Narrow_NoText_Page1()
 {
@@ -416,7 +416,7 @@ public void Case26_BarcodeCode128_Narrow_NoText_Page1()
     RunSinglePage(json);
 }
 
-[Test]
+[Fact]
 // Primitive: multiple barcodes in a single overlay (QR + Code128)
 public void Case27_Barcode_Multiple_Primitives_Page1()
 {
@@ -445,7 +445,7 @@ public void Case27_Barcode_Multiple_Primitives_Page1()
 }
     
 
-[Test]
+[Fact]
 // Primitive: QR code default EC level (M), medium size
 public void Case23_QR_DefaultEc_Page1()
 {
@@ -465,7 +465,7 @@ public void Case23_QR_DefaultEc_Page1()
     """);
 }
 
-[Test]
+[Fact]
 // Primitive: QR code high EC level (H), large size
 public void Case24_QR_EcH_Large_Page1()
 {
@@ -485,7 +485,7 @@ public void Case24_QR_EcH_Large_Page1()
     """);
 }
 
-[Test]
+[Fact]
 // Primitive: Code128 barcode with human-readable text
 public void Case25_Code128_WithText_Page1()
 {
@@ -505,7 +505,7 @@ public void Case25_Code128_WithText_Page1()
     """);
 }
 
-[Test]
+[Fact]
 // Primitive: Code128 barcode without human-readable text
 public void Case26_Code128_NoText_Wide_Page1()
 {
@@ -525,7 +525,7 @@ public void Case26_Code128_NoText_Wide_Page1()
     """);
 }
 
-    [Test]
+    [Fact]
     // Placement: textAnchor (occurrence=first) on page 1 + visual redaction (marker should disappear)
     public void Case30_TextAnchor_First_Page1()
     {
@@ -549,7 +549,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Placement: textAnchor (occurrence=last) on page 2
     public void Case31_TextAnchor_Last_Page2()
     {
@@ -573,7 +573,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 2);
     }
 
-    [Test]
+    [Fact]
     // Placement: textAnchor (occurrence=all) on page 2 (overlay rendered twice)
     public void Case32_TextAnchor_All_Page2()
     {
@@ -597,7 +597,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 2);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=90): corner placement TOP-LEFT
     public void Case40_Rotate90_Corner_TopLeft_Page1()
     {
@@ -621,7 +621,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=90): corner placement TOP-RIGHT
     public void Case41_Rotate90_Corner_TopRight_Page1()
     {
@@ -645,7 +645,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=90): corner placement BOTTOM-LEFT
     public void Case42_Rotate90_Corner_BottomLeft_Page1()
     {
@@ -669,7 +669,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=90): corner placement BOTTOM-RIGHT
     public void Case43_Rotate90_Corner_BottomRight_Page1()
     {
@@ -693,7 +693,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=180): corner placement BOTTOM-RIGHT
     public void Case43_Rotate180_Corner_BottomRight_Page1()
     {
@@ -717,7 +717,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-        [Test]
+        [Fact]
     // Rotated page (/Rotate=180): corner placement TOP-LEFT
     public void Case40_Rotate180_Corner_TopLeft_Page1()
     {
@@ -741,7 +741,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=180): corner placement TOP-RIGHT
     public void Case41_Rotate180_Corner_TopRight_Page1()
     {
@@ -765,7 +765,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=180): corner placement BOTTOM-LEFT
     public void Case42_Rotate180_Corner_BottomLeft_Page1()
     {
@@ -789,7 +789,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-        [Test]
+        [Fact]
     // Rotated page (/Rotate=270): corner placement BOTTOM-RIGHT
     public void Case43_Rotate270_Corner_BottomRight_Page1()
     {
@@ -813,7 +813,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-        [Test]
+        [Fact]
     // Rotated page (/Rotate=270): corner placement TOP-LEFT
     public void Case40_Rotate270_Corner_TopLeft_Page1()
     {
@@ -837,7 +837,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=270): corner placement TOP-RIGHT
     public void Case41_Rotate270_Corner_TopRight_Page1()
     {
@@ -861,7 +861,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Rotated page (/Rotate=270): corner placement BOTTOM-LEFT
     public void Case42_Rotate270_Corner_BottomLeft_Page1()
     {
@@ -885,7 +885,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-    [Test]
+    [Fact]
     // Primitive: polyline (stroke) at BOTTOM-RIGHT
     public void Case44_Polyline_Stroke_Page1()
     {
@@ -918,24 +918,26 @@ public void Case26_Code128_NoText_Wide_Page1()
           """);
     }
 
-    private static void RunSinglePage(string jsonSpec)
+    private static void RunSinglePage(string jsonSpec, [CallerMemberName]string testName = "undefined")
     {
-        RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1);
+        RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1, testName: testName);
     }
 
-    private static void RunOnePageFromInput(string jsonSpec, string inputPdfFileName, int pageNumber1BasedToRender)
+    private static void RunOnePageFromInput(string jsonSpec, string inputPdfFileName, int pageNumber1BasedToRender, [CallerMemberName]string testName = "undefined")
     {
         var testData = TestPaths.GetTestDataDir();
         var inputPdf = Path.Combine(testData, "input", inputPdfFileName);
 
-        var workDir = TestContext.CurrentContext.WorkDirectory;
+        var workDir = Path.GetTempPath();
         var actualDir = Path.Combine(workDir, "pdftool_test_artifacts", "actual");
         Directory.CreateDirectory(actualDir);
 
         var expectedDir = Path.Combine(testData, "expected");
         Directory.CreateDirectory(expectedDir);
 
-        var testId = $"{TestContext.CurrentContext.Test.ClassName}.{TestContext.CurrentContext.Test.MethodName}";
+        // если вызываешь из самого теста:
+        var testId = $"{typeof(GoldenMasterRendererTests).FullName}.{testName}";
+
         var actualPdf = Path.Combine(actualDir, $"{testId}.output.pdf");
 
         var specPath = WriteTempJson(jsonSpec);
@@ -958,7 +960,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             if (GoldenTestConfig.UpdateBaselines)
             {
                 File.Copy(actualPng, expectedPng, overwrite: true);
-                Assert.Pass("Baseline created.");
+                return;
             }
 
             Assert.Fail("Baseline missing. Enable UPDATE_BASELINES.");
@@ -967,7 +969,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         if (GoldenTestConfig.UpdateBaselines)
         {
             File.Copy(actualPng, expectedPng, overwrite: true);
-            Assert.Pass("Baseline updated.");
+            return;
         }
 
         ImageComparer.AssertPngEqualWithTolerance(expectedPng, actualPng);
