@@ -68,6 +68,18 @@ public static class JsonSpecValidator
                     throw new FormatException($"Overlay '{overlayName}': line.strokeWidth must be >= 0");
                 break;
 
+            case PolylinePrimitiveSpec pl:
+                if (pl.Points is null || pl.Points.Length < 2)
+                    throw new FormatException($"Overlay '{overlayName}': polyline.points must contain at least 2 points");
+                for (var i = 0; i < pl.Points.Length; i++)
+                {
+                    if (pl.Points[i] is null || pl.Points[i].Length != 2)
+                        throw new FormatException($"Overlay '{overlayName}': polyline.points[{i}] must be [x,y]");
+                }
+                if (pl.StrokeWidth is not null && pl.StrokeWidth < 0)
+                    throw new FormatException($"Overlay '{overlayName}': polyline.strokeWidth must be >= 0");
+                break;
+
             case ImagePrimitiveSpec im:
                 RequireLen(overlayName, "image.rect", im.Rect, 4);
                 if (im.Rect[2] < 0 || im.Rect[3] < 0)

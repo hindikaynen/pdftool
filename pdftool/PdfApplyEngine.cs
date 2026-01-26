@@ -329,6 +329,14 @@ internal static class PrimitiveBoundsCalculator
                         break;
                     }
 
+                case PolylinePrimitiveSpec pl:
+                    {
+                        var sw = pl.StrokeWidth ?? 1;
+                        foreach (var p in pl.Points)
+                            Include(p[0] - sw / 2, p[1] - sw / 2, p[0] + sw / 2, p[1] + sw / 2);
+                        break;
+                    }
+
                 case BarcodePrimitiveSpec bc:
                     // Bounds for barcodes are defined by their rect.
                     Include(bc.Rect[0], bc.Rect[1], bc.Rect[0] + bc.Rect[2], bc.Rect[1] + bc.Rect[3]);
@@ -424,6 +432,10 @@ public static class PrimitiveRenderer
 
                 case LinePrimitiveSpec l:
                     DrawLine(pdfCanvas, origin, l);
+                    break;
+
+                case PolylinePrimitiveSpec pl:
+                    DrawPolyline(pdfCanvas, origin, pl);
                     break;
 
                 case BarcodePrimitiveSpec bc:
@@ -550,6 +562,33 @@ public static class PrimitiveRenderer
         c.LineTo(x2, y2);
         c.Stroke();
 
+        c.RestoreState();
+    }
+
+    private static void DrawPolyline(PdfCanvas c, PointD o, PolylinePrimitiveSpec pl)
+    {
+        c.SaveState();
+
+        if (pl.StrokeWidth is not null && pl.StrokeWidth.Value > 0)
+            c.SetLineWidth((float)pl.StrokeWidth.Value);
+
+        var stroke = ColorSupport.Parse(pl.Stroke);
+        if (stroke is not null)
+        {
+            c.SetStrokeColor(stroke.Value.Color);
+            ColorSupport.ApplyOpacity(c, fillOpacity: null, strokeOpacity: stroke.Value.Alpha);
+        }
+
+        var p0 = pl.Points[0];
+        c.MoveTo((float)(o.X + p0[0]), (float)(o.Y + p0[1]));
+
+        for (var i = 1; i < pl.Points.Length; i++)
+        {
+            var p = pl.Points[i];
+            c.LineTo((float)(o.X + p[0]), (float)(o.Y + p[1]));
+        }
+
+        c.Stroke();
         c.RestoreState();
     }
 

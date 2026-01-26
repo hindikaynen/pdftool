@@ -885,6 +885,39 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
+    [Test]
+    // Primitive: polyline (stroke) at BOTTOM-RIGHT
+    public void Case44_Polyline_Stroke_Page1()
+    {
+        RunSinglePage("""
+          {
+            "overlays": [
+              {
+                "name": "case44",
+                "pages": "1",
+                "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,120] },
+                "primitives": [
+                  { "type": "rect", "rect": [0,0,320,120], "cornerRadius": 10, "fill": "#00000010", "stroke": "#222222ff", "strokeWidth": 1 },
+                  {
+                    "type": "polyline",
+                    "points": [
+                      [12, 12],
+                      [60, 92],
+                      [140, 26],
+                      [220, 102],
+                      [300, 40]
+                    ],
+                    "stroke": "#00aa00ff",
+                    "strokeWidth": 3
+                  },
+                  { "type": "text", "at": [12,100], "size": 11, "color": "#222222ff", "value": "Polyline stroke" }
+                ]
+              }
+            ]
+          }
+          """);
+    }
+
     private static void RunSinglePage(string jsonSpec)
     {
         RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1);

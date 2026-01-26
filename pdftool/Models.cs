@@ -63,6 +63,7 @@ public sealed class PlacementSpec
 [JsonDerivedType(typeof(RectPrimitiveSpec), "rect")]
 [JsonDerivedType(typeof(EllipsePrimitiveSpec), "ellipse")]
 [JsonDerivedType(typeof(LinePrimitiveSpec), "line")]
+[JsonDerivedType(typeof(PolylinePrimitiveSpec), "polyline")]
 [JsonDerivedType(typeof(ImagePrimitiveSpec), "image")]
 [JsonDerivedType(typeof(BarcodePrimitiveSpec), "barcode")]
 public abstract class PrimitiveSpec
@@ -158,6 +159,19 @@ public sealed class LinePrimitiveSpec : PrimitiveSpec
 
     [JsonPropertyName("to")]
     public required double[] To { get; init; }
+
+    [JsonPropertyName("stroke")]
+    public string? Stroke { get; init; }
+
+    [JsonPropertyName("strokeWidth")]
+    public double? StrokeWidth { get; init; }
+}
+
+public sealed class PolylinePrimitiveSpec : PrimitiveSpec
+{
+    // points: [[x,y], [x,y], ...]
+    [JsonPropertyName("points")]
+    public required double[][] Points { get; init; }
 
     [JsonPropertyName("stroke")]
     public string? Stroke { get; init; }
