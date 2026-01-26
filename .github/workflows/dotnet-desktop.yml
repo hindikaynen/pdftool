@@ -34,14 +34,11 @@ jobs:
       - name: Restore linux-x64
         run: dotnet restore $PROJECT_PATH -r linux-x64
 
-      - name: Build (Release)
-        run: dotnet build $PROJECT_PATH --configuration Release --no-restore
-
-      - name: Run Tests (with TRX)
-        run: dotnet test $TEST_PROJECT_PATH --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"
+      - name: Run Tests
+        run: dotnet test $TEST_PROJECT_PATH --configuration Release --logger "trx;LogFileName=test-results.trx"
 
       - name: Publish Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: "**/test-results.trx"
+          files: "pdftool.Tests/TestResults/test-results.trx"
