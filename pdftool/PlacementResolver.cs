@@ -5,8 +5,6 @@ public readonly record struct PointD(double X, double Y);
 public static class PlacementResolver
 {
     /// <summary>
-    /// Variant B (inward offsets) + bounds-aware anchoring.
-    ///
     /// Offsets are ALWAYS "inward" from the chosen page corner (in pt):
     /// - topLeft:     [right, down]
     /// - topRight:    [left,  down]
