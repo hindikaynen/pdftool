@@ -8,15 +8,10 @@ public static class JsonSpecParser
     {
         var json = File.ReadAllText(jsonPath);
 
-        var opts = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            AllowTrailingCommas = true
-        };
-
-        var spec = JsonSerializer.Deserialize<DocumentSpec>(json, opts)
-                   ?? throw new FormatException("Invalid JSON: root is null");
+        var spec = JsonSerializer.Deserialize(
+            json,
+            PdfToolJsonContext.Default.DocumentSpec
+        ) ?? throw new FormatException("Invalid JSON: root is null");
 
         if (spec.Overlays is null || spec.Overlays.Count == 0)
             throw new FormatException("JSON must contain non-empty 'overlays' array");

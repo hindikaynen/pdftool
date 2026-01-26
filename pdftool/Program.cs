@@ -25,7 +25,16 @@ internal static class Program
         validateCmd.SetAction(parseResult =>
         {
             var jsonFile = parseResult.GetValue(validateJson)!;
-            RunValidate(jsonFile);
+            try
+            {
+                RunValidate(jsonFile);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return 1;
+            }
         });
 
         root.Subcommands.Add(validateCmd);
