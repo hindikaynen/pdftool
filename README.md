@@ -812,22 +812,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
 | `stroke` | string | null | Цвет контура в hex формате (#RRGGBBAA) |
 | `strokeWidth` | number | 1 | Толщина линии контура (pt). Значение ≥ 0 |
 
-## Параметры rect (Bounding Box)
-
-### Что такое bounding box?
-
-Эллипс вписан в прямоугольник (bounding box):
-
-```
-rect = [x, y, width, height]
-
-     (x, y) ───────────────────── (x+width, y)
-        │           ЭЛЛИПС          │
-        │        вписан сюда        │
-        │                           │
-        │                           │
-     (x, y+height) ──────────────────
-```
+## Параметры rect
 
 ### Координаты и размеры
 
