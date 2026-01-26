@@ -204,6 +204,28 @@ public class GoldenMasterRendererTests
     }
 
     [Test]
+    // Primitive: ellipse (fill+stroke) at TOP-LEFT
+    public void Case05_Ellipse_FillStroke_Page1()
+    {
+        RunSinglePage("""
+        {
+          "overlays": [
+            {
+              "name": "case05",
+              "pages": "1",
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
+              "primitives": [
+                { "type": "rect", "rect": [0,0,260,110], "cornerRadius": 10, "fill": "#00000010", "stroke": "#222222ff", "strokeWidth": 1 },
+                { "type": "ellipse", "rect": [12,12,86,86], "fill": "#00ffffff", "stroke": "#ff00ffff", "strokeWidth": 2 },
+                { "type": "text", "at": [110,58], "size": 11, "color": "#222222ff", "value": "Ellipse fill+stroke" }
+              ]
+            }
+          ]
+        }
+        """);
+    }
+
+    [Test]
     // Primitive: text(rect) with halign=left at TOP-LEFT
     public void Case12_TextRect_HAlignLeft_Page1()
     {

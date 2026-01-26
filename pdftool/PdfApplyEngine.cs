@@ -318,6 +318,10 @@ internal static class PrimitiveBoundsCalculator
                     Include(r.Rect[0], r.Rect[1], r.Rect[0] + r.Rect[2], r.Rect[1] + r.Rect[3]);
                     break;
 
+                case EllipsePrimitiveSpec e:
+                    Include(e.Rect[0], e.Rect[1], e.Rect[0] + e.Rect[2], e.Rect[1] + e.Rect[3]);
+                    break;
+
                 case LinePrimitiveSpec l:
                     {
                         var sw = l.StrokeWidth ?? 1;
@@ -434,6 +438,10 @@ public static class PrimitiveRenderer
                     DrawText(canvas, origin, t);
                     break;
 
+                case EllipsePrimitiveSpec t:
+                    DrawEllipse(pdfCanvas, origin, t);
+                    break;
+
                 default:
                     throw new NotSupportedException($"Primitive '{prim.GetType().Name}' is not implemented in this renderer iteration.");
             }
@@ -474,6 +482,43 @@ public static class PrimitiveRenderer
 
         var hasFill = !string.IsNullOrWhiteSpace(r.Fill);
         var hasStroke = !string.IsNullOrWhiteSpace(r.Stroke) || (r.StrokeWidth is not null && r.StrokeWidth.Value > 0);
+
+        if (hasFill && hasStroke) c.FillStroke();
+        else if (hasFill) c.Fill();
+        else c.Stroke();
+
+        c.RestoreState();
+    }
+
+    private static void DrawEllipse(PdfCanvas c, PointD o, EllipsePrimitiveSpec e)
+    {
+        c.SaveState();
+
+        var x = (float)(o.X + e.Rect[0]);
+        var y = (float)(o.Y + e.Rect[1]);
+        var w = (float)e.Rect[2];
+        var h = (float)e.Rect[3];
+
+        // iText ellipse is defined by bounding box corners: (x1,y1) - (x2,y2)
+        c.Ellipse(x, y, x + w, y + h);
+
+        if (e.StrokeWidth is not null && e.StrokeWidth.Value > 0)
+            c.SetLineWidth((float)e.StrokeWidth.Value);
+
+        var fill = ColorSupport.Parse(e.Fill);
+        var stroke = ColorSupport.Parse(e.Stroke);
+
+        if (fill is not null)
+            c.SetFillColor(fill.Value.Color);
+        if (stroke is not null)
+            c.SetStrokeColor(stroke.Value.Color);
+
+        ColorSupport.ApplyOpacity(c,
+            fillOpacity: fill?.Alpha,
+            strokeOpacity: stroke?.Alpha);
+
+        var hasFill = !string.IsNullOrWhiteSpace(e.Fill);
+        var hasStroke = !string.IsNullOrWhiteSpace(e.Stroke) || (e.StrokeWidth is not null && e.StrokeWidth.Value > 0);
 
         if (hasFill && hasStroke) c.FillStroke();
         else if (hasFill) c.Fill();

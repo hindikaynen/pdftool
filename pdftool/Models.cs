@@ -61,6 +61,7 @@ public sealed class PlacementSpec
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(TextPrimitiveSpec), "text")]
 [JsonDerivedType(typeof(RectPrimitiveSpec), "rect")]
+[JsonDerivedType(typeof(EllipsePrimitiveSpec), "ellipse")]
 [JsonDerivedType(typeof(LinePrimitiveSpec), "line")]
 [JsonDerivedType(typeof(ImagePrimitiveSpec), "image")]
 [JsonDerivedType(typeof(BarcodePrimitiveSpec), "barcode")]
@@ -122,6 +123,23 @@ public sealed class RectPrimitiveSpec : PrimitiveSpec
 
     [JsonPropertyName("cornerRadius")]
     public double? CornerRadius { get; init; }
+
+    [JsonPropertyName("fill")]
+    public string? Fill { get; init; }
+
+    [JsonPropertyName("stroke")]
+    public string? Stroke { get; init; }
+
+    [JsonPropertyName("strokeWidth")]
+    public double? StrokeWidth { get; init; }
+}
+
+
+public sealed class EllipsePrimitiveSpec : PrimitiveSpec
+{
+    // rect: [x,y,w,h] (bounding box of the ellipse)
+    [JsonPropertyName("rect")]
+    public required double[] Rect { get; init; }
 
     [JsonPropertyName("fill")]
     public string? Fill { get; init; }

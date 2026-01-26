@@ -51,6 +51,16 @@ public static class JsonSpecValidator
                     throw new FormatException($"Overlay '{overlayName}': rect.cornerRadius must be >= 0");
                 break;
 
+
+            case EllipsePrimitiveSpec e:
+                RequireLen(overlayName, "ellipse.rect", e.Rect, 4);
+                if (e.Rect[2] < 0 || e.Rect[3] < 0)
+                    throw new FormatException($"Overlay '{overlayName}': ellipse.w/h must be >= 0");
+                if (e.StrokeWidth is not null && e.StrokeWidth < 0)
+                    throw new FormatException($"Overlay '{overlayName}': ellipse.strokeWidth must be >= 0");
+                break;
+
+
             case LinePrimitiveSpec l:
                 RequireLen(overlayName, "line.from", l.From, 2);
                 RequireLen(overlayName, "line.to", l.To, 2);
