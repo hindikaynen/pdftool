@@ -215,7 +215,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
 
 ---
 
-# Text Primitive — Добавление текста на PDF
+# Text — Добавление текста на PDF
 
 ## Обзор
 
@@ -248,7 +248,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
 ### Обязательные
 
 | Параметр | Тип | Описание |
-|----------|-----|---------|---------
+|----------|-----|---------|
 | `type` | string | Всегда `"text"` |
 | `value` | string | Текст для вывода (не пустой) |
 | `at` или `rect` | number[] | **Ровно одно** из них должно быть определено |
@@ -256,7 +256,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
 ### Опциональные (стиль)
 
 | Параметр | Тип | Default | Описание |
-|----------|-----|---------|---------|---------
+|----------|-----|---------|---------|
 | `size` | number | 12 | Размер шрифта в пунктах (pt). Значение > 0 |
 | `font` | string | "Helvetica" | Название шрифта (см. поддерживаемые ниже) |
 | `color` | string | "#000000FF" | Цвет в формате hex (#RRGGBBAA) |
