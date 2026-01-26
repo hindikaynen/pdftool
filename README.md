@@ -139,8 +139,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
       "placement": {
         "mode": "textAnchor",
         "text": "[SIGN_HERE]",
-        "occurrence": "first",
-        "offset": [50, -30]
+        "occurrence": "first"
       },
       "primitives": [
         {
@@ -551,8 +550,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
   "placement": {
     "mode": "textAnchor",
     "text": "[SIGNATURE]",
-    "occurrence": "first",
-    "offset": [50, -15]
+    "occurrence": "first"
   },
   "primitives": [
     {
