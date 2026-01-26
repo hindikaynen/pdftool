@@ -85,7 +85,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
       "pages": "all",
       "placement": {
         "mode": "corner",
-        "corner": "bottomCenter",
+        "corner": "bottomLeft",
         "offset": [0, 20]
       },
       "primitives": [
@@ -168,7 +168,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
 ### Режимы размещения (placement mode)
 
 **Corner Mode** — привязка к углам страницы:
-- `topLeft`, `topRight`, `bottomLeft`, `bottomRight`, `topCenter`, `bottomCenter`
+- `topLeft`, `topRight`, `bottomLeft`, `bottomRight`
 - Offset `[dx, dy]` — смещение внутрь от выбранного угла (в пунктах)
   - `dx` > 0 — смещение вправо (от левых углов) или влево (от правых углов)
   - `dy` > 0 — смещение вниз (от верхних углов) или вверх (от нижних углов)
@@ -448,7 +448,7 @@ pdftool apply --in input.pdf --out output.pdf --json overlays.json
   "pages": "all",
   "placement": {
     "mode": "corner",
-    "corner": "bottomCenter",
+    "corner": "bottomLeft",
     "offset": [0, 15]
   },
   "primitives": [
