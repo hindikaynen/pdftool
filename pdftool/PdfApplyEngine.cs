@@ -126,32 +126,32 @@ internal static class OverlayStampRenderer
         if (bounds is null)
             return;
 
-        
+
         var rotation = page.GetRotation();
 
-var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
-var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
+        var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+        var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
 
-// Resolve placement in VIEW coordinates (what user sees), then convert the resulting rectangle to USER space.
-var originView = PlacementResolver.ResolveCornerOrigin(
-    pageWidth: viewW,
-    pageHeight: viewH,
-    corner: placement.Corner!.Value,
-    offset: placement.Offset,
-    overlayMinX: bounds.Value.MinX,
-    overlayMinY: bounds.Value.MinY,
-    overlayMaxX: bounds.Value.MaxX,
-    overlayMaxY: bounds.Value.MaxY
-);
+        // Resolve placement in VIEW coordinates (what user sees), then convert the resulting rectangle to USER space.
+        var originView = PlacementResolver.ResolveCornerOrigin(
+            pageWidth: viewW,
+            pageHeight: viewH,
+            corner: placement.Corner!.Value,
+            offset: placement.Offset,
+            overlayMinX: bounds.Value.MinX,
+            overlayMinY: bounds.Value.MinY,
+            overlayMaxX: bounds.Value.MaxX,
+            overlayMaxY: bounds.Value.MaxY
+        );
 
-var viewRect = new Rectangle(
-    (float)(originView.X + bounds.Value.MinX),
-    (float)(originView.Y + bounds.Value.MinY),
-    (float)bounds.Value.Width,
-    (float)bounds.Value.Height
-);
+        var viewRect = new Rectangle(
+            (float)(originView.X + bounds.Value.MinX),
+            (float)(originView.Y + bounds.Value.MinY),
+            (float)bounds.Value.Width,
+            (float)bounds.Value.Height
+        );
 
-var rectOnPage = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
+        var rectOnPage = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
 
         // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
         var preTransform = PageRotationTransform.GetViewToUserMatrixForAppearanceBox(
@@ -160,7 +160,7 @@ var rectOnPage = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unro
             rectOnPage.GetHeight()
         );
 
-var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
+        var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
@@ -174,83 +174,42 @@ var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHei
         page.AddAnnotation(annot);
     }
 
-    
-public static void RenderOverlayAsStampAtTopLeftView(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftXView, double topLeftYView)
-{
-    var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
-    if (bounds is null)
-        return;
 
-    var rotation = page.GetRotation();
-
-    // Build the overlay rectangle in VIEW coordinates (origin bottom-left, axes as seen by user).
-    var viewRect = new Rectangle(
-        (float)topLeftXView,
-        (float)(topLeftYView - bounds.Value.Height),
-        (float)bounds.Value.Width,
-        (float)bounds.Value.Height
-    );
-
-    // Convert view-rect into USER space, taking page rotation into account.
-    var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
-    var userRect = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
-
-    // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
-    var preTransform = PageRotationTransform.GetViewToUserMatrixForAppearanceBox(
-        rotation,
-        userRect.GetWidth(),
-        userRect.GetHeight()
-    );
-
-    var appearanceBox = new Rectangle(0, 0, userRect.GetWidth(), userRect.GetHeight());
-    var xobj = new PdfFormXObject(appearanceBox);
-
-    // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance (in VIEW coords).
-    var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
-    PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
-
-    var annot = new PdfStampAnnotation(userRect);
-    annot.SetContents($"pdftool overlay: {overlayName}");
-    annot.SetFlag(PdfAnnotation.PRINT);
-    annot.SetNormalAppearance(xobj.GetPdfObject());
-
-    page.AddAnnotation(annot);
-}
-
-public static void RenderOverlayAsStampAtTopLeft(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftX, double topLeftY)
+    public static void RenderOverlayAsStampAtTopLeftView(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftXView, double topLeftYView)
     {
         var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
         if (bounds is null)
             return;
 
-        
         var rotation = page.GetRotation();
-// Position overlay so that its TOP-LEFT corner is at (topLeftX, topLeftY).
-        // Given bounds (minX..maxX, minY..maxY) in overlay coordinates, the stamp rectangle on page is:
-        //   x = topLeftX
-        //   y = topLeftY - height
-        var rectOnPage = new Rectangle(
-            (float)topLeftX,
-            (float)(topLeftY - bounds.Value.Height),
+
+        // Build the overlay rectangle in VIEW coordinates (origin bottom-left, axes as seen by user).
+        var viewRect = new Rectangle(
+            (float)topLeftXView,
+            (float)(topLeftYView - bounds.Value.Height),
             (float)bounds.Value.Width,
             (float)bounds.Value.Height
         );
 
+        // Convert view-rect into USER space, taking page rotation into account.
+        var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+        var userRect = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
+
         // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
         var preTransform = PageRotationTransform.GetViewToUserMatrixForAppearanceBox(
             rotation,
-            rectOnPage.GetWidth(),
-            rectOnPage.GetHeight()
+            userRect.GetWidth(),
+            userRect.GetHeight()
         );
 
-        var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
+        var appearanceBox = new Rectangle(0, 0, userRect.GetWidth(), userRect.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
-        // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance.
+        // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance (in VIEW coords).
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
         PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
 
-        var annot = new PdfStampAnnotation(rectOnPage);
+        var annot = new PdfStampAnnotation(userRect);
         annot.SetContents($"pdftool overlay: {overlayName}");
         annot.SetFlag(PdfAnnotation.PRINT);
         annot.SetNormalAppearance(xobj.GetPdfObject());

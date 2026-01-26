@@ -66,9 +66,7 @@ public sealed class PlacementSpec
 [JsonDerivedType(typeof(PolylinePrimitiveSpec), "polyline")]
 [JsonDerivedType(typeof(ImagePrimitiveSpec), "image")]
 [JsonDerivedType(typeof(BarcodePrimitiveSpec), "barcode")]
-public abstract class PrimitiveSpec
-{
-}
+public abstract class PrimitiveSpec;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TextAlign { left, center, right, justify }
@@ -182,12 +180,15 @@ public sealed class PolylinePrimitiveSpec : PrimitiveSpec
 
 class ImagePrimitiveSpec : PrimitiveSpec
 {
-    public double[] Rect { get; init; }
-    public string Base64 { get; init; }
-
-    // Optional background and border
+    [JsonPropertyName("rect")]
+    public required double[] Rect { get; init; }
+    [JsonPropertyName("base64")]
+    public required string Base64 { get; init; }
+    [JsonPropertyName("fill")]
     public string? Fill { get; init; }
+    [JsonPropertyName("stroke")]
     public string? Stroke { get; init; }
+    [JsonPropertyName("strokeWidth")]
     public double? StrokeWidth { get; init; }
 }
 

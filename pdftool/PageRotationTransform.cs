@@ -161,18 +161,18 @@ internal static class PageRotationTransform
 
         return rotation switch
         {
-            0 => new[] { 1f, 0f, 0f, 1f, 0f, 0f },
+            0 => [1f, 0f, 0f, 1f, 0f, 0f],
 
             // ViewToUser for 90 CCW: (x,y) -> (W - y, x)
-            90 => new[] { 0f, 1f, -1f, 0f, (float)userBoxWidth, 0f },
+            90 => [0f, 1f, -1f, 0f, (float)userBoxWidth, 0f],
 
             // ViewToUser for 180: (x,y) -> (W - x, H - y)
-            180 => new[] { -1f, 0f, 0f, -1f, (float)userBoxWidth, (float)userBoxHeight },
+            180 => [-1f, 0f, 0f, -1f, (float)userBoxWidth, (float)userBoxHeight],
 
             // ViewToUser for 270 CCW: (x,y) -> (y, H - x)
-            270 => new[] { 0f, -1f, 1f, 0f, 0f, (float)userBoxHeight },
+            270 => [0f, -1f, 1f, 0f, 0f, (float)userBoxHeight],
 
-            _ => new[] { 1f, 0f, 0f, 1f, 0f, 0f }
+            _ => [1f, 0f, 0f, 1f, 0f, 0f]
         };
     }
 }
