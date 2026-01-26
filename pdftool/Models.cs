@@ -150,7 +150,9 @@ public sealed class LinePrimitiveSpec : PrimitiveSpec
 
 class ImagePrimitiveSpec : PrimitiveSpec
 {
+    [JsonPropertyName("rect")]
     public double[] Rect { get; init; }
+    [JsonPropertyName("base64")]
     public string Base64 { get; init; }
 }
 
