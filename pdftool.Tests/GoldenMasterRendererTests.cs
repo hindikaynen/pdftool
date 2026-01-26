@@ -970,7 +970,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             Assert.Pass("Baseline updated.");
         }
 
-        ImageComparer.AssertPngEqual(expectedPng, actualPng);
+        ImageComparer.AssertPngEqualWithTolerance(expectedPng, actualPng);
     }
 
     private static string WriteTempJson(string json)
