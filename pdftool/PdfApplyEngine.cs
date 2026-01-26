@@ -345,7 +345,7 @@ internal static class PrimitiveBoundsCalculator
                         else if (t.At is not null)
                         {
                             var fontSize = (float)(t.Size ?? 12);
-                            var w = MeasurePointTextWidth(t.Value, fontSize);
+                            var w = MeasurePointTextWidth(t.Value, fontSize, t.Font);
                             var h = Math.Max(1f, fontSize * 1.2f);
 
                             Include(t.At[0], t.At[1], t.At[0] + w, t.At[1] + h);
@@ -363,24 +363,25 @@ internal static class PrimitiveBoundsCalculator
         return new BoundsD(minX, minY, maxX, maxY);
     }
 
-    internal static float MeasurePointTextWidth(string text, float fontSize)
+    internal static PdfFont ResolveFont(string? fontName)
     {
-        // Using a standard built-in font for measurement.
-        // This matches the default font iText uses when none is explicitly set.
-        var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+        var name = string.IsNullOrWhiteSpace(fontName)
+            ? StandardFonts.HELVETICA
+            : fontName;
 
-        // PdfFont.GetWidth returns width in glyph units; overload with fontSize yields width in points.
+        return PdfFontFactory.CreateFont(name);
+    }
+
+    internal static float MeasurePointTextWidth(string text, float fontSize, string? fontName = null)
+    {
+        var font = ResolveFont(fontName);
         var w = font.GetWidth(text, fontSize);
-
-        // Safety: avoid zero width (empty text) producing degenerate bounds.
         return Math.Max(1f, w);
     }
 
-    internal static float MeasureIntrinsicTextWidth(string text, float fontSize)
+    internal static float MeasureIntrinsicTextWidth(string text, float fontSize, string? fontName = null)
     {
-        // Measures the widest line (split by \n) using a standard built-in font.
-        // Used to implement text.rect.halign as a BLOCK alignment (not text alignment inside the block).
-        var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+        var font = ResolveFont(fontName);
 
         if (string.IsNullOrEmpty(text))
             return 1f;
@@ -585,6 +586,7 @@ public static class PrimitiveRenderer
             var y = (float)(o.Y + t.At[1]);
 
             var p = new Paragraph(t.Value);
+            p.SetFont(PrimitiveBoundsCalculator.ResolveFont(t.Font));
             p.SetMargin(0);
             p.SetPadding(0);
 
@@ -592,7 +594,7 @@ public static class PrimitiveRenderer
             p.SetFontSize(fontSize);
 
             // IMPORTANT: do not use large constant width here — it breaks bounds/anchoring for topRight.
-            var w = PrimitiveBoundsCalculator.MeasurePointTextWidth(t.Value, fontSize);
+            var w = PrimitiveBoundsCalculator.MeasurePointTextWidth(t.Value, fontSize, t.Font);
             p.SetFixedPosition(x, y, w);
 
             canvas.Add(p);
@@ -607,6 +609,7 @@ public static class PrimitiveRenderer
             var h = (float)t.Rect[3];
 
             var p = new Paragraph(t.Value);
+            p.SetFont(PrimitiveBoundsCalculator.ResolveFont(t.Font));
 
             if (t.Size is not null)
                 p.SetFontSize((float)t.Size.Value);
@@ -633,7 +636,7 @@ public static class PrimitiveRenderer
             if (!wrap)
             {
                 var fs = (float)(t.Size ?? 12);
-                blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value, fs));
+                blockWidth = Math.Min(w, PrimitiveBoundsCalculator.MeasureIntrinsicTextWidth(t.Value, fs, t.Font));
             }
 
             var metrics = MeasureParagraph(canvas, p, blockWidth);

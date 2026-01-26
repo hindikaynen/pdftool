@@ -34,7 +34,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,240,60], "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "value": "Rect + text(at)" }
+                { "type": "text", "at": [12,22], "size": 12, "font": "Times-Roman", "value": "Rect + text(at)" }
               ]
             }
           ]
@@ -55,7 +55,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "value": "cornerRadius=12" }
+                { "type": "text", "at": [12,22], "size": 12, "font": "Helvetica-Bold", "value": "cornerRadius=12" }
               ]
             }
           ]
@@ -81,6 +81,7 @@ public class GoldenMasterRendererTests
                   "rect": [10,10,300,70],
                   "wrap": true,
                   "size": 11,
+                  "font": "Courier",
                   "value": "This is a long text that should wrap automatically inside a fixed rectangle."
                 }
               ]
@@ -108,6 +109,7 @@ public class GoldenMasterRendererTests
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
+                  "font": "Times-Italic",
                   "valign": "top",
                   "value": "VAlign TOP\nLine 2\nLine 3"
                 }
@@ -136,6 +138,7 @@ public class GoldenMasterRendererTests
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
+                  "font": "Courier-Bold",
                   "valign": "middle",
                   "value": "VAlign MIDDLE\nLine 2\nLine 3"
                 }
@@ -164,6 +167,7 @@ public class GoldenMasterRendererTests
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
+                  "font": "Helvetica-Oblique",
                   "valign": "bottom",
                   "value": "VAlign BOTTOM\nLine 2\nLine 3"
                 }
@@ -187,7 +191,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
               "primitives": [
                 { "type": "line", "from": [0,0], "to": [260,0], "strokeWidth": 6 },
-                { "type": "text", "at": [0,14], "size": 11, "value": "strokeWidth = 6pt" }
+                { "type": "text", "at": [0,14], "size": 11, "font": "Courier-Bold", "value": "strokeWidth = 6pt" }
               ]
             }
           ]
@@ -208,7 +212,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,200] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "left", "valign": "middle", "value": "LEFT" }
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "font": "Times-BoldItalic", "halign": "left", "valign": "middle", "value": "LEFT" }
               ]
             }
           ]
@@ -229,7 +233,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,200] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "center", "valign": "middle", "value": "CENTER" }
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "font": "Courier-Oblique", "halign": "center", "valign": "middle", "value": "CENTER" }
               ]
             }
           ]
@@ -250,7 +254,7 @@ public class GoldenMasterRendererTests
               "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,140] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "strokeWidth": 1 },
-                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "halign": "right", "valign": "middle", "value": "RIGHT" }
+                { "type": "text", "rect": [10,10,300,70], "wrap": false, "size": 18, "font": "Helvetica-BoldOblique", "halign": "right", "valign": "middle", "value": "RIGHT" }
               ]
             }
           ]
