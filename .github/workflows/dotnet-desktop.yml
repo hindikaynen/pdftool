@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PROJECT_PATH: pdftool/PdfTool.csproj
+      PROJECT_PATH: pdftool/pdftool.csproj
       TEST_PROJECT_PATH: pdftool.Tests/pdftool.Tests.csproj
 
     steps:
