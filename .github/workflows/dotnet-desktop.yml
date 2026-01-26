@@ -32,11 +32,11 @@ jobs:
       - name: Build (Release)
         run: dotnet build $PROJECT_PATH --configuration Release --no-restore
 
-      - name: Run Tests
-        run: dotnet test $TEST_PROJECT_PATH --configuration Release --no-build --verbosity normal
-        
+      - name: Run Tests (with TRX)
+        run: dotnet test $TEST_PROJECT_PATH --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"
+
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: ${{ github.workspace }}/*/TestResults/*.xml
+          files: "**/test-results.trx"
