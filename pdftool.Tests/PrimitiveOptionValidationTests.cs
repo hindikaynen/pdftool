@@ -533,22 +533,20 @@ public class PrimitiveOptionValidationTests
     public void Image_Base64Missing_Fails()
     {
         // NOTE: 'base64' is required by the model.
-        var ov = ParseFirstOverlay("""
-        {
-          "overlays": [
-            {
-              "name": "I",
-              "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft" },
-              "primitives": [
-                { "type": "image", "rect": [0,0,10,10] }
-              ]
-            }
-          ]
-        }
-        """);
-
-        Assert.Throws<FormatException>(() => JsonSpecValidator.ValidateOverlay(ov));
+        Assert.Throws<JsonException>(() => ParseFirstOverlay("""
+         {
+           "overlays": [
+             {
+               "name": "I",
+               "pages": "1",
+               "placement": { "mode": "corner", "corner": "topLeft" },
+               "primitives": [
+                 { "type": "image", "rect": [0,0,10,10] }
+               ]
+             }
+           ]
+         }
+         """));
     }
 
     [Test]
