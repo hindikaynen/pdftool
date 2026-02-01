@@ -1,17 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-	<RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="itext" Version="9.5.0" />
-    <PackageReference Include="itext.bouncy-castle-adapter" Version="9.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.CommandLine" Version="2.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="itext" Version="9.5.0" />
+		<PackageReference Include="itext.bouncy-castle-adapter" Version="9.5.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<PackageReference Include="System.CommandLine" Version="2.0.2" />
+	</ItemGroup>
+	<ItemGroup>
+		<TrimmerRootAssembly Include="itext.commons" />
+		<TrimmerRootAssembly Include="itext.io" />
+		<TrimmerRootAssembly Include="itext.layout" />
+		<TrimmerRootAssembly Include="itext.kernel" />
+		<TrimmerRootAssembly Include="itext.forms" />
+		<TrimmerRootAssembly Include="itext.pdfa" />
+		<TrimmerRootAssembly Include="itext.sign" />
+	</ItemGroup>
 </Project>
