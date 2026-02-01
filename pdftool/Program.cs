@@ -106,10 +106,6 @@ internal static class Program
         using var reader = new PdfReader(inPdf.FullName);
         using var writer = new PdfWriter(outPdf.FullName);
         using var pdf = new PdfDocument(reader, writer);
-
-        var totalPages = pdf.GetNumberOfPages();
-        var plan = WorkPlanBuilder.Build(spec, totalPages);
-
-        Console.WriteLine($"Plan built. Overlays: {plan.Count}, totalPages: {totalPages}");
+        PdfApplyEngine.Apply(pdf, spec);
     }
 }

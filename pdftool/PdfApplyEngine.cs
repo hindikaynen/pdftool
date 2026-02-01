@@ -167,7 +167,7 @@ internal static class OverlayStampRenderer
         PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
 
         var annot = new PdfStampAnnotation(rectOnPage);
-        annot.SetContents($"pdftool overlay: {overlayName}");
+        annot.SetContents(overlayName);
         annot.SetFlag(PdfAnnotation.PRINT);
         annot.SetNormalAppearance(xobj.GetPdfObject());
 

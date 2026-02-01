@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "pdftool": {
+      "commandName": "Project",
+      "commandLineArgs": "apply --in empty-10p.pdf --out output.pdf --json 1.json"
+    }
+  }
+}

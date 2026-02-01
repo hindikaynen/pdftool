@@ -957,6 +957,7 @@ public void Case26_Code128_NoText_Wide_Page1()
 
             var expectedPng = Path.Combine(expectedDir, $"{testId}.p{pageNumber1BasedToRender}.png");
 
+#pragma warning disable CS0162 // Unreachable code detected
             if (!File.Exists(expectedPng))
             {
                 if (GoldenTestConfig.UpdateBaselines)
@@ -974,6 +975,7 @@ public void Case26_Code128_NoText_Wide_Page1()
                 return;
             }
 
+#pragma warning restore CS0162 // Unreachable code detected
             ImageComparer.AssertPngEqualWithTolerance(expectedPng, actualPng);
         }
         finally
