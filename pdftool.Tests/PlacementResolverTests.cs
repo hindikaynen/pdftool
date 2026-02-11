@@ -18,11 +18,11 @@ public class PlacementResolverTests
             overlayMaxX: 100,
             overlayMaxY: 50);
 
-        // Target point for bottomLeft with no offset is (0,0),
-        // and overlay's bottom-left corner is (minX,minY)=(0,0),
-        // so origin must be (0,0).
+        // In TOP-LEFT coords: bottomLeft target with no offset is (0, pageHeight) = (0,800),
+        // and overlay's bottom-left corner is (minX,maxY) = (0,50),
+        // so origin = (0,800-50) = (0,750).
         Assert.Equal(0, p.X);
-        Assert.Equal(0, p.Y);
+        Assert.Equal(750, p.Y);
     }
 
     [Fact]
@@ -38,11 +38,11 @@ public class PlacementResolverTests
             overlayMaxX: 100,
             overlayMaxY: 50);
 
-        // Target point for topLeft is (dx, pageHeight-dy) = (10, 780).
-        // Overlay top-left corner in local coords is (minX, maxY) = (0, 50).
-        // origin = target - overlayCorner = (10, 730).
+        // In TOP-LEFT coords: topLeft target is (dx,dy) = (10,20).
+        // Overlay top-left corner in local coords is (minX, minY) = (0,0).
+        // origin = (10,20).
         Assert.Equal(10, p.X);
-        Assert.Equal(730, p.Y);
+        Assert.Equal(20, p.Y);
     }
 
     [Fact]
@@ -58,11 +58,11 @@ public class PlacementResolverTests
             overlayMaxX: 100,
             overlayMaxY: 50);
 
-        // Target point for topRight is (pageWidth-dx, pageHeight-dy) = (590, 780).
-        // Overlay top-right corner in local coords is (maxX, maxY) = (100, 50).
-        // origin = (590-100, 780-50) = (490, 730).
+        // In TOP-LEFT coords: topRight target is (pageWidth-dx, dy) = (590,20).
+        // Overlay top-right corner in local coords is (maxX, minY) = (100,0).
+        // origin = (590-100, 20-0) = (490,20).
         Assert.Equal(490, p.X);
-        Assert.Equal(730, p.Y);
+        Assert.Equal(20, p.Y);
     }
 
     [Fact]
@@ -78,11 +78,11 @@ public class PlacementResolverTests
             overlayMaxX: 100,
             overlayMaxY: 50);
 
-        // Target point for bottomRight is (pageWidth-dx, dy) = (590, 20).
-        // Overlay bottom-right corner in local coords is (maxX, minY) = (100, 0).
-        // origin = (590-100, 20-0) = (490, 20).
+        // In TOP-LEFT coords: bottomRight target is (pageWidth-dx, pageHeight-dy) = (590,780).
+        // Overlay bottom-right corner in local coords is (maxX, maxY) = (100,50).
+        // origin = (590-100, 780-50) = (490,730).
         Assert.Equal(490, p.X);
-        Assert.Equal(20, p.Y);
+        Assert.Equal(730, p.Y);
     }
 
     [Fact]

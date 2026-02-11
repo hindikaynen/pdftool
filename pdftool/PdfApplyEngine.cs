@@ -69,6 +69,7 @@ public static class PdfApplyEngine
                         // Anchor point is VISUAL TOP-LEFT of found text bbox (in "view" coords, i.e. as user sees the rotated page).
                         var rotation = PageRotationTransform.NormalizeRotation(page.GetRotation());
                         var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+                        var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
 
                         var ux = (double)r.GetX();
                         var uy = (double)r.GetY();
@@ -98,17 +99,22 @@ public static class PdfApplyEngine
                             if (cv.Y > maxY) maxY = cv.Y;
                         }
 
-                        var anchorX = minX;
-                        var anchorY = maxY;
+                        // Anchor point in VIEW BOTTOM-LEFT coords.
+                        var anchorXBl = minX;
+                        var anchorYBl = maxY;
+
+                        // Convert to the user-facing VIEW TOP-LEFT system (Y-down).
+                        var anchorXTl = anchorXBl;
+                        var anchorYTl = viewH - anchorYBl;
 
                         var dx = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[0] : 0;
                         var dy = plan.Placement.Offset?.Length >= 2 ? plan.Placement.Offset[1] : 0;
 
-                        // For textAnchor, offset is [right, down] in "view" coordinates.
-                        anchorX += dx;
-                        anchorY -= dy;
+                        // For textAnchor, offset is [right, down] in VIEW TOP-LEFT coordinates.
+                        anchorXTl += dx;
+                        anchorYTl += dy;
 
-                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, plan.Name, anchorX, anchorY);
+                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, plan.Name, anchorXTl, anchorYTl);
                     }
 
                     continue;
@@ -122,6 +128,9 @@ public static class PdfApplyEngine
 
 internal static class OverlayStampRenderer
 {
+    private static double ViewYTopLeftToBottomLeft(double yTopLeft, double viewHeight)
+        => viewHeight - yTopLeft;
+
     public static void RenderOverlayAsStamp(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName)
     {
         var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
@@ -134,8 +143,9 @@ internal static class OverlayStampRenderer
         var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
         var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
 
-        // Resolve placement in VIEW coordinates (what user sees), then convert the resulting rectangle to USER space.
-        var originView = PlacementResolver.ResolveCornerOrigin(
+        // Resolve placement in VIEW TOP-LEFT coordinates (what user expects), then build
+        // the equivalent VIEW BOTTOM-LEFT rectangle for the rotation mapper.
+        var originViewTl = PlacementResolver.ResolveCornerOrigin(
             pageWidth: viewW,
             pageHeight: viewH,
             corner: placement.Corner!.Value,
@@ -146,9 +156,14 @@ internal static class OverlayStampRenderer
             overlayMaxY: bounds.Value.MaxY
         );
 
+        // Top-left of overlay bbox in VIEW TOP-LEFT space
+        var overlayTopLeftX = originViewTl.X + bounds.Value.MinX;
+        var overlayTopLeftY = originViewTl.Y + bounds.Value.MinY;
+
+        // Convert to VIEW BOTTOM-LEFT rectangle (PDF-like) for ViewRectToUserRect.
         var viewRect = new Rectangle(
-            (float)(originView.X + bounds.Value.MinX),
-            (float)(originView.Y + bounds.Value.MinY),
+            (float)overlayTopLeftX,
+            (float)(ViewYTopLeftToBottomLeft(overlayTopLeftY + bounds.Value.Height, viewH)),
             (float)bounds.Value.Width,
             (float)bounds.Value.Height
         );
@@ -166,7 +181,15 @@ internal static class OverlayStampRenderer
         var xobj = new PdfFormXObject(appearanceBox);
 
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
-        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
+        PrimitiveRenderer.RenderOnXObject(
+            pdf,
+            xobj,
+            shiftOrigin,
+            primitives,
+            preTransform,
+            inputCoordsTopLeft: true,
+            topLeftBoxHeight: bounds.Value.Height
+        );
 
         var annot = new PdfStampAnnotation(rectOnPage);
         annot.SetContents(overlayName);
@@ -177,7 +200,7 @@ internal static class OverlayStampRenderer
     }
 
 
-    public static void RenderOverlayAsStampAtTopLeftView(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftXView, double topLeftYView)
+    public static void RenderOverlayAsStampAtTopLeftView(PdfDocument pdf, PdfPage page, PlacementSpec placement, IReadOnlyList<PrimitiveSpec> primitives, string overlayName, double topLeftXViewTl, double topLeftYViewTl)
     {
         var bounds = PrimitiveBoundsCalculator.ComputeBoundsMeasured(primitives);
         if (bounds is null)
@@ -185,16 +208,19 @@ internal static class OverlayStampRenderer
 
         var rotation = page.GetRotation();
 
-        // Build the overlay rectangle in VIEW coordinates (origin bottom-left, axes as seen by user).
+        // Build the overlay rectangle from a VIEW TOP-LEFT point, then convert to VIEW BOTTOM-LEFT
+        // for the rotation mapper.
+        var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
+        var (viewW, viewH) = PageRotationTransform.GetViewSize(unrotW, unrotH, rotation);
+
         var viewRect = new Rectangle(
-            (float)topLeftXView,
-            (float)(topLeftYView - bounds.Value.Height),
+            (float)topLeftXViewTl,
+            (float)(ViewYTopLeftToBottomLeft(topLeftYViewTl + bounds.Value.Height, viewH)),
             (float)bounds.Value.Width,
             (float)bounds.Value.Height
         );
 
         // Convert view-rect into USER space, taking page rotation into account.
-        var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
         var userRect = PageRotationTransform.ViewRectToUserRect(viewRect, unrotW, unrotH, rotation);
 
         // Map primitive coordinates from VIEW space into the appearance box USER-space coordinates.
@@ -209,7 +235,15 @@ internal static class OverlayStampRenderer
 
         // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance (in VIEW coords).
         var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
-        PrimitiveRenderer.RenderOnXObject(pdf, xobj, shiftOrigin, primitives, preTransform);
+        PrimitiveRenderer.RenderOnXObject(
+            pdf,
+            xobj,
+            shiftOrigin,
+            primitives,
+            preTransform,
+            inputCoordsTopLeft: true,
+            topLeftBoxHeight: bounds.Value.Height
+        );
 
         var annot = new PdfStampAnnotation(userRect);
         annot.SetContents($"pdftool overlay: {overlayName}");
@@ -393,43 +427,61 @@ internal static class PrimitiveBoundsCalculator
 
 public static class PrimitiveRenderer
 {
-    public static void RenderOnXObject(PdfDocument pdf, PdfFormXObject xobj, PointD origin, IReadOnlyList<PrimitiveSpec> primitives, float[]? preTransform = null)
+    private static float ToBottomLeftY(PointD origin, double y, bool inputTopLeft, double topLeftBoxHeight)
+        => (float)(origin.Y + (inputTopLeft ? (topLeftBoxHeight - y) : y));
+
+    private static float ToBottomLeftRectY(PointD origin, double yTop, double height, bool inputTopLeft, double topLeftBoxHeight)
+        => (float)(origin.Y + (inputTopLeft ? (topLeftBoxHeight - yTop - height) : yTop));
+
+    public static void RenderOnXObject(
+        PdfDocument pdf,
+        PdfFormXObject xobj,
+        PointD origin,
+        IReadOnlyList<PrimitiveSpec> primitives,
+        float[]? preTransform = null,
+        bool inputCoordsTopLeft = false,
+        double? topLeftBoxHeight = null)
     {
         var pdfCanvas = new PdfCanvas(xobj, pdf);
         if (preTransform is not null)
             pdfCanvas.ConcatMatrix(preTransform[0], preTransform[1], preTransform[2], preTransform[3], preTransform[4], preTransform[5]);
         var canvas = new Canvas(pdfCanvas, new Rectangle(0, 0, xobj.GetWidth(), xobj.GetHeight()));
 
+        if (inputCoordsTopLeft && (topLeftBoxHeight is null || topLeftBoxHeight.Value <= 0))
+            throw new ArgumentException("topLeftBoxHeight must be provided (and > 0) when inputCoordsTopLeft=true", nameof(topLeftBoxHeight));
+
+        var hTl = topLeftBoxHeight ?? 0;
+
         foreach (var prim in primitives)
         {
             switch (prim)
             {
                 case RectPrimitiveSpec r:
-                    DrawRect(pdfCanvas, origin, r);
+                    DrawRect(pdfCanvas, origin, r, inputCoordsTopLeft, hTl);
                     break;
 
                 case LinePrimitiveSpec l:
-                    DrawLine(pdfCanvas, origin, l);
+                    DrawLine(pdfCanvas, origin, l, inputCoordsTopLeft, hTl);
                     break;
 
                 case PolylinePrimitiveSpec pl:
-                    DrawPolyline(pdfCanvas, origin, pl);
+                    DrawPolyline(pdfCanvas, origin, pl, inputCoordsTopLeft, hTl);
                     break;
 
                 case BarcodePrimitiveSpec bc:
-                    DrawBarcode(pdfCanvas, pdf, origin, bc);
+                    DrawBarcode(pdfCanvas, pdf, origin, bc, inputCoordsTopLeft, hTl);
                     break;
 
                 case ImagePrimitiveSpec img:
-                    DrawImage(pdfCanvas, origin, img);
+                    DrawImage(pdfCanvas, origin, img, inputCoordsTopLeft, hTl);
                     break;
 
                 case TextPrimitiveSpec t:
-                    DrawText(canvas, origin, t);
+                    DrawText(canvas, origin, t, inputCoordsTopLeft, hTl);
                     break;
 
                 case EllipsePrimitiveSpec t:
-                    DrawEllipse(pdfCanvas, origin, t);
+                    DrawEllipse(pdfCanvas, origin, t, inputCoordsTopLeft, hTl);
                     break;
 
                 default:
@@ -440,12 +492,12 @@ public static class PrimitiveRenderer
         canvas.Close();
     }
 
-    private static void DrawRect(PdfCanvas c, PointD o, RectPrimitiveSpec r)
+    private static void DrawRect(PdfCanvas c, PointD o, RectPrimitiveSpec r, bool inputTopLeft, double topLeftBoxHeight)
     {
         c.SaveState();
 
         var x = (float)(o.X + r.Rect[0]);
-        var y = (float)(o.Y + r.Rect[1]);
+        var y = ToBottomLeftRectY(o, r.Rect[1], r.Rect[3], inputTopLeft, topLeftBoxHeight);
         var w = (float)r.Rect[2];
         var h = (float)r.Rect[3];
 
@@ -480,12 +532,12 @@ public static class PrimitiveRenderer
         c.RestoreState();
     }
 
-    private static void DrawEllipse(PdfCanvas c, PointD o, EllipsePrimitiveSpec e)
+    private static void DrawEllipse(PdfCanvas c, PointD o, EllipsePrimitiveSpec e, bool inputTopLeft, double topLeftBoxHeight)
     {
         c.SaveState();
 
         var x = (float)(o.X + e.Rect[0]);
-        var y = (float)(o.Y + e.Rect[1]);
+        var y = ToBottomLeftRectY(o, e.Rect[1], e.Rect[3], inputTopLeft, topLeftBoxHeight);
         var w = (float)e.Rect[2];
         var h = (float)e.Rect[3];
 
@@ -517,14 +569,14 @@ public static class PrimitiveRenderer
         c.RestoreState();
     }
 
-    private static void DrawLine(PdfCanvas c, PointD o, LinePrimitiveSpec l)
+    private static void DrawLine(PdfCanvas c, PointD o, LinePrimitiveSpec l, bool inputTopLeft, double topLeftBoxHeight)
     {
         c.SaveState();
 
         var x1 = (float)(o.X + l.From[0]);
-        var y1 = (float)(o.Y + l.From[1]);
+        var y1 = ToBottomLeftY(o, l.From[1], inputTopLeft, topLeftBoxHeight);
         var x2 = (float)(o.X + l.To[0]);
-        var y2 = (float)(o.Y + l.To[1]);
+        var y2 = ToBottomLeftY(o, l.To[1], inputTopLeft, topLeftBoxHeight);
 
         if (l.StrokeWidth is not null && l.StrokeWidth.Value > 0)
             c.SetLineWidth((float)l.StrokeWidth.Value);
@@ -543,7 +595,7 @@ public static class PrimitiveRenderer
         c.RestoreState();
     }
 
-    private static void DrawPolyline(PdfCanvas c, PointD o, PolylinePrimitiveSpec pl)
+    private static void DrawPolyline(PdfCanvas c, PointD o, PolylinePrimitiveSpec pl, bool inputTopLeft, double topLeftBoxHeight)
     {
         c.SaveState();
 
@@ -558,24 +610,24 @@ public static class PrimitiveRenderer
         }
 
         var p0 = pl.Points[0];
-        c.MoveTo((float)(o.X + p0[0]), (float)(o.Y + p0[1]));
+        c.MoveTo((float)(o.X + p0[0]), ToBottomLeftY(o, p0[1], inputTopLeft, topLeftBoxHeight));
 
         for (var i = 1; i < pl.Points.Length; i++)
         {
             var p = pl.Points[i];
-            c.LineTo((float)(o.X + p[0]), (float)(o.Y + p[1]));
+            c.LineTo((float)(o.X + p[0]), ToBottomLeftY(o, p[1], inputTopLeft, topLeftBoxHeight));
         }
 
         c.Stroke();
         c.RestoreState();
     }
 
-    private static void DrawBarcode(PdfCanvas c, PdfDocument pdf, PointD o, BarcodePrimitiveSpec bc)
+    private static void DrawBarcode(PdfCanvas c, PdfDocument pdf, PointD o, BarcodePrimitiveSpec bc, bool inputTopLeft, double topLeftBoxHeight)
     {
         c.SaveState();
 
         var x = (float)(o.X + bc.Rect[0]);
-        var y = (float)(o.Y + bc.Rect[1]);
+        var y = ToBottomLeftRectY(o, bc.Rect[1], bc.Rect[3], inputTopLeft, topLeftBoxHeight);
         var w = (float)bc.Rect[2];
         var h = (float)bc.Rect[3];
 
@@ -644,7 +696,7 @@ public static class PrimitiveRenderer
         throw new NotSupportedException($"Unsupported barcode kind: {bc.Kind}");
     }
 
-    private static void DrawImage(PdfCanvas c, PointD o, ImagePrimitiveSpec img)
+    private static void DrawImage(PdfCanvas c, PointD o, ImagePrimitiveSpec img, bool inputTopLeft, double topLeftBoxHeight)
     {
         c.SaveState();
 
@@ -672,7 +724,7 @@ public static class PrimitiveRenderer
         }
 
         var x = (float)(o.X + img.Rect[0]);
-        var y = (float)(o.Y + img.Rect[1]);
+        var y = ToBottomLeftRectY(o, img.Rect[1], img.Rect[3], inputTopLeft, topLeftBoxHeight);
         var w = (float)img.Rect[2];
         var h = (float)img.Rect[3];
 
@@ -686,7 +738,7 @@ public static class PrimitiveRenderer
         c.RestoreState();
     }
 
-    private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t)
+    private static void DrawText(Canvas canvas, PointD o, TextPrimitiveSpec t, bool inputTopLeft, double topLeftBoxHeight)
     {
         var pdfCanvas = canvas.GetPdfCanvas();
         pdfCanvas.SaveState();
@@ -701,7 +753,13 @@ public static class PrimitiveRenderer
         if (t.At is not null)
         {
             var x = (float)(o.X + t.At[0]);
-            var y = (float)(o.Y + t.At[1]);
+            // In top-left coords, 'at' is interpreted as the visual TOP-LEFT of the text block.
+            // iText fixed position expects a bottom-left, so we shift by the estimated text height.
+            var fontSize = (float)(t.Size ?? 12);
+            var estH = (double)Math.Max(1f, fontSize * 1.2f);
+            var y = inputTopLeft
+                ? ToBottomLeftRectY(o, t.At[1], estH, inputTopLeft, topLeftBoxHeight)
+                : (float)(o.Y + t.At[1]);
 
             var p = new Paragraph(t.Value);
             p.SetFont(PrimitiveBoundsCalculator.ResolveFont(t.Font));
@@ -711,7 +769,6 @@ public static class PrimitiveRenderer
             if (textColor is not null)
                 p.SetFontColor(textColor.Value.Color);
 
-            var fontSize = (float)(t.Size ?? 12);
             p.SetFontSize(fontSize);
 
             // IMPORTANT: do not use large constant width here — it breaks bounds/anchoring for topRight.
@@ -726,7 +783,7 @@ public static class PrimitiveRenderer
         if (t.Rect is not null)
         {
             var x = (float)(o.X + t.Rect[0]);
-            var y = (float)(o.Y + t.Rect[1]);
+            var y = ToBottomLeftRectY(o, t.Rect[1], t.Rect[3], inputTopLeft, topLeftBoxHeight);
             var w = (float)t.Rect[2];
             var h = (float)t.Rect[3];
 

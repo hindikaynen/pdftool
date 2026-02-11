@@ -5,16 +5,23 @@ public readonly record struct PointD(double X, double Y);
 public static class PlacementResolver
 {
     /// <summary>
+    /// **User-friendly coordinate system (TOP-LEFT, Y-down)**
+    ///
+    /// This project intentionally uses a top-left origin for JSON specs:
+    /// - (0,0) is the TOP-LEFT of the (rotated) page as the user sees it.
+    /// - X grows to the right.
+    /// - Y grows down.
+    ///
     /// Offsets are ALWAYS "inward" from the chosen page corner (in pt):
     /// - topLeft:     [right, down]
     /// - topRight:    [left,  down]
     /// - bottomLeft:  [right, up]
     /// - bottomRight: [left,  up]
     ///
-    /// This method also anchors the OVERLAY bounds to that corner point so that callers can
-    /// keep primitive coordinates natural (x>=0, y>=0) regardless of corner.
+    /// This method anchors the OVERLAY bounds to that corner point so callers can keep
+    /// primitive coordinates natural (x>=0, y>=0) regardless of corner.
     ///
-    /// Returns an origin in PDF user space (bottom-left).
+    /// Returns an origin in VIEW TOP-LEFT coordinates.
     /// When you later place primitives with (origin + localX, origin + localY), the chosen
     /// overlay corner will match the target point inside the page.
     /// </summary>
@@ -43,23 +50,24 @@ public static class PlacementResolver
         }
 
         // Target point inside the page, by corner, using "inward" semantics.
-        // Note: PDF origin is bottom-left, so "down" from top means decreasing Y.
+        // Note: VIEW origin is top-left, so "down" from top means increasing Y.
         var target = corner switch
         {
-            PageCorner.topLeft => new PointD(dx, pageHeight - dy),
-            PageCorner.topRight => new PointD(pageWidth - dx, pageHeight - dy),
-            PageCorner.bottomLeft => new PointD(dx, dy),
-            PageCorner.bottomRight => new PointD(pageWidth - dx, dy),
+            PageCorner.topLeft => new PointD(dx, dy),
+            PageCorner.topRight => new PointD(pageWidth - dx, dy),
+            PageCorner.bottomLeft => new PointD(dx, pageHeight - dy),
+            PageCorner.bottomRight => new PointD(pageWidth - dx, pageHeight - dy),
             _ => throw new ArgumentOutOfRangeException(nameof(corner))
         };
 
         // Overlay corner point in overlay-local coordinates.
+        // In top-left coordinates, MinY is the visual TOP and MaxY is the visual BOTTOM.
         var overlayCorner = corner switch
         {
-            PageCorner.topLeft => new PointD(overlayMinX, overlayMaxY),
-            PageCorner.topRight => new PointD(overlayMaxX, overlayMaxY),
-            PageCorner.bottomLeft => new PointD(overlayMinX, overlayMinY),
-            PageCorner.bottomRight => new PointD(overlayMaxX, overlayMinY),
+            PageCorner.topLeft => new PointD(overlayMinX, overlayMinY),
+            PageCorner.topRight => new PointD(overlayMaxX, overlayMinY),
+            PageCorner.bottomLeft => new PointD(overlayMinX, overlayMaxY),
+            PageCorner.bottomRight => new PointD(overlayMaxX, overlayMaxY),
             _ => throw new ArgumentOutOfRangeException(nameof(corner))
         };
 
