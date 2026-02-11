@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
@@ -14,6 +15,7 @@ using iText.IO.Font.Constants;
 using iText.IO.Image;
 using iText.Barcodes;
 using iText.Barcodes.Qrcode;
+using iText.IO.Font;
 using iText.Kernel.Colors;
 using iText.Kernel.Pdf.Extgstate;
 
@@ -335,13 +337,30 @@ internal static class PrimitiveBoundsCalculator
         return new BoundsD(minX, minY, maxX, maxY);
     }
 
+    private static readonly Dictionary<string, PdfFont> Fonts = new();
+
     internal static PdfFont ResolveFont(string? fontName)
     {
-        var name = string.IsNullOrWhiteSpace(fontName)
-            ? StandardFonts.HELVETICA
-            : fontName;
+        if (string.IsNullOrEmpty(fontName))
+            return ResolveFont("Roboto-Regular");
 
-        return PdfFontFactory.CreateFont(name);
+        if (Fonts.TryGetValue(fontName, out var font))
+            return font;
+
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = assembly
+            .GetManifestResourceNames()
+            .FirstOrDefault(x => x.Contains(fontName));
+
+        if (resourceName == null)
+            throw new FormatException($"Font {fontName} can not be resolved");
+
+        using var fontStream = assembly.GetManifestResourceStream(resourceName);
+        using var ms = new MemoryStream();
+        fontStream?.CopyTo(ms);
+        font = PdfFontFactory.CreateFont(ms.ToArray(), PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
+        Fonts.Add(fontName, font);
+        return font;
     }
 
     internal static float MeasurePointTextWidth(string text, float fontSize, string? fontName = null)
@@ -793,22 +812,20 @@ public static class PrimitiveRenderer
                 return null;
 
             var s = hex.Trim();
-
-            // Required format: #RRGGBBAA ("#rgba" in spec wording)
             if (s.Length != 9 || s[0] != '#')
-                throw new FormatException($"Color must be in format #RRGGBBAA, got '{hex}'");
+                throw new FormatException($"Color must be in format #AARRGGBB, got '{hex}'");
 
             static byte ParseByte(string src, int start)
             {
                 if (!byte.TryParse(src.AsSpan(start, 2), System.Globalization.NumberStyles.HexNumber, null, out var b))
-                    throw new FormatException($"Color must be in format #RRGGBBAA, got '{src}'");
+                    throw new FormatException($"Color must be in format #AARRGGBB, got '{src}'");
                 return b;
             }
 
-            var r = ParseByte(s, 1);
-            var g = ParseByte(s, 3);
-            var b = ParseByte(s, 5);
-            var a = ParseByte(s, 7);
+            var a = ParseByte(s, 1);
+            var r = ParseByte(s, 3);
+            var g = ParseByte(s, 5);
+            var b = ParseByte(s, 7);
 
             var alpha = a / 255f;
             return new ParsedColor(new DeviceRgb(r, g, b), alpha);
