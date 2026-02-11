@@ -192,7 +192,7 @@ internal static class OverlayStampRenderer
         );
 
         var annot = new PdfStampAnnotation(rectOnPage);
-        annot.SetContents(overlayName);
+        annot.SetName(new PdfString(overlayName));
         annot.SetFlag(PdfAnnotation.PRINT);
         annot.SetNormalAppearance(xobj.GetPdfObject());
 
