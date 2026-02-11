@@ -33,8 +33,8 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,240,60], "stroke": "#ff0000ff", "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "font": "Times-Roman", "color": "#0000ffff", "value": "Rect + text(at)" }
+                { "type": "rect", "rect": [0,0,240,60], "stroke": "#ffff0000", "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "font": "Roboto-Regular", "color": "#ff0000ff", "value": "Rect + text(at)" }
               ]
             }
           ]
@@ -54,8 +54,8 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "fill": "#00ff0020", "stroke": "#00ff00ff", "strokeWidth": 1 },
-                { "type": "text", "at": [12,22], "size": 12, "font": "Helvetica-Bold", "color": "#00aa00ff", "value": "cornerRadius=12" }
+                { "type": "rect", "rect": [0,0,240,60], "cornerRadius": 12, "fill": "#2000ff00", "stroke": "#ff00ff00", "strokeWidth": 1 },
+                { "type": "text", "at": [12,22], "size": 12, "font": "Roboto-Bold", "color": "#ff00aa00", "value": "cornerRadius=12" }
               ]
             }
           ]
@@ -75,14 +75,14 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "fill": "#ffff0020", "stroke": "#000000ff", "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,90], "cornerRadius": 8, "fill": "#20ffff00", "stroke": "#ff000000", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,70],
                   "wrap": true,
                   "size": 11,
-                  "font": "Courier",
-                  "color": "#000000ff",
+                  "font": "Roboto-Regular",
+                  "color": "#ff000000",
                   "value": "This is a long text that should wrap automatically inside a fixed rectangle."
                 }
               ]
@@ -104,15 +104,15 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,140] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#00ffffff", "stroke": "#0000ffff", "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#ff00ffff", "stroke": "#ff0000ff", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
                   "valign": "top",
-                  "font": "Times-Italic",
-                  "color": "#0000ffff",
+                  "font": "Roboto-Italic",
+                  "color": "#ff0000ff",
                   "value": "VAlign TOP\nLine 2\nLine 3"
                 }
               ]
@@ -134,15 +134,15 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topRight", "offset": [72,140] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#ff00ff20", "stroke": "#ff00ffff", "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#20ff00ff", "stroke": "#ffff00ff", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
                   "valign": "middle",
-                  "font": "Courier-Bold",
-                  "color": "#ff00ffff",
+                  "font": "Roboto-Bold",
+                  "color": "#ffff00ff",
                   "value": "VAlign MIDDLE\nLine 2\nLine 3"
                 }
               ]
@@ -164,15 +164,15 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,140] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#ff000020", "stroke": "#ff0000ff", "strokeWidth": 1 },
+                { "type": "rect", "rect": [0,0,320,110], "cornerRadius": 8, "fill": "#20ff0000", "stroke": "#ffff0000", "strokeWidth": 1 },
                 {
                   "type": "text",
                   "rect": [10,10,300,90],
                   "wrap": true,
                   "size": 12,
                   "valign": "bottom",
-                  "font": "Helvetica-Oblique",
-                  "color": "#ff0000ff",
+                  "font": "Roboto-Medium",
+                  "color": "#ffff0000",
                   "value": "VAlign BOTTOM\nLine 2\nLine 3"
                 }
               ]
@@ -194,8 +194,8 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
               "primitives": [
-                { "type": "line", "from": [0,0], "to": [260,0], "stroke": "#ff8800ff", "strokeWidth": 6 },
-                { "type": "text", "at": [0,14], "size": 11, "color": "#ff8800ff", "value": "strokeWidth = 6pt" }
+                { "type": "line", "from": [0,0], "to": [260,0], "stroke": "#ffff8800", "strokeWidth": 6 },
+                { "type": "text", "at": [0,14], "size": 11, "color": "#ffff8800", "value": "strokeWidth = 6pt" }
               ]
             }
           ]
@@ -215,9 +215,9 @@ public class GoldenMasterRendererTests
               "pages": "1",
               "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
               "primitives": [
-                { "type": "rect", "rect": [0,0,260,110], "cornerRadius": 10, "fill": "#00000010", "stroke": "#222222ff", "strokeWidth": 1 },
-                { "type": "ellipse", "rect": [12,12,86,86], "fill": "#00ffffff", "stroke": "#ff00ffff", "strokeWidth": 2 },
-                { "type": "text", "at": [110,58], "size": 11, "color": "#222222ff", "value": "Ellipse fill+stroke" }
+                { "type": "rect", "rect": [0,0,260,110], "cornerRadius": 10, "fill": "#10000000", "stroke": "#ff222222", "strokeWidth": 1 },
+                { "type": "ellipse", "rect": [12,12,86,86], "fill": "#ff00ffff", "stroke": "#ffff00ff", "strokeWidth": 2 },
+                { "type": "text", "at": [110,58], "size": 11, "color": "#ff222222", "value": "Ellipse fill+stroke" }
               ]
             }
           ]
@@ -305,9 +305,9 @@ public void Case20_ImageRect_PngBase64_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "topLeft", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,220,90], "cornerRadius": 10, "fill": "#00000010", "stroke": "#222222ff", "strokeWidth": 1 },
-            { "type": "image", "rect": [12,12,66,66], "fill": "#00ffffff", "stroke": "#ff00ffff", "strokeWidth": 2, "base64": "__PNG__" },
-            { "type": "text", "at": [90,40], "size": 11, "color": "#222222ff", "value": "PNG base64 image" }
+            { "type": "rect", "rect": [0,0,220,90], "cornerRadius": 10, "fill": "#10000000", "stroke": "#ff222222", "strokeWidth": 1 },
+            { "type": "image", "rect": [12,12,66,66], "fill": "#ff00ffff", "stroke": "#ffff00ff", "strokeWidth": 2, "base64": "__PNG__" },
+            { "type": "text", "at": [90,40], "size": 11, "color": "#ff222222", "value": "PNG base64 image" }
           ]
         }
       ]
@@ -332,9 +332,9 @@ public void Case23_BarcodeQr_EcL_TopRight_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "topRight", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "fill": "#ffffffcc", "stroke": "#000000ff", "strokeWidth": 1 },
-            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "fill": "#ffffffff", "stroke": "#00000040", "strokeWidth": 1, "color": "#0000ffff", "value": "HELLO-QR-L", "options": { "ecLevel": "L" } },
-            { "type": "text", "at": [110,58], "size": 11, "color": "#0000ffff", "value": "QR EC=L" }
+            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "fill": "#ccffffff", "stroke": "#ff000000", "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "fill": "#ffffffff", "stroke": "#40000000", "strokeWidth": 1, "color": "#ff0000ff", "value": "HELLO-QR-L", "options": { "ecLevel": "L" } },
+            { "type": "text", "at": [110,58], "size": 11, "color": "#ff0000ff", "value": "QR EC=L" }
           ]
         }
       ]
@@ -356,9 +356,9 @@ public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "fill": "#00ff0020", "stroke": "#00ff00ff", "strokeWidth": 1 },
-            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "fill": "#ffffffff", "stroke": "#00ff00ff", "strokeWidth": 1, "color": "#00aa00ff", "value": "HELLO-QR-Q", "options": { "ecLevel": "Q" } },
-            { "type": "text", "at": [110,58], "size": 11, "color": "#00aa00ff", "value": "QR EC=Q" }
+            { "type": "rect", "rect": [0,0,240,110], "cornerRadius": 10, "fill": "#2000ff00", "stroke": "#ff00ff00", "strokeWidth": 1 },
+            { "type": "barcode", "kind": "qr", "rect": [12,12,86,86], "fill": "#ffffffff", "stroke": "#ff00ff00", "strokeWidth": 1, "color": "#ff00aa00", "value": "HELLO-QR-Q", "options": { "ecLevel": "Q" } },
+            { "type": "text", "at": [110,58], "size": 11, "color": "#ff00aa00", "value": "QR EC=Q" }
           ]
         }
       ]
@@ -380,9 +380,9 @@ public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
           "pages": "1",
           "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,72] },
           "primitives": [
-            { "type": "rect", "rect": [0,0,340,120], "cornerRadius": 10, "fill": "#0000ff10", "stroke": "#0000ffff", "strokeWidth": 1 },
-            { "type": "barcode", "kind": "code128", "rect": [12,50,316,55], "fill": "#ffffffff", "stroke": "#0000ffff", "strokeWidth": 1, "color": "#0000ffff", "value": "ABC-123-XYZ", "options": { "showText": true } },
-            { "type": "text", "at": [12,18], "size": 11, "color": "#0000ffff", "value": "Code128 showText=true" }
+            { "type": "rect", "rect": [0,0,340,120], "cornerRadius": 10, "fill": "#100000ff", "stroke": "#ff0000ff", "strokeWidth": 1 },
+            { "type": "barcode", "kind": "code128", "rect": [12,50,316,55], "fill": "#ffffffff", "stroke": "#ff0000ff", "strokeWidth": 1, "color": "#ff0000ff", "value": "ABC-123-XYZ", "options": { "showText": true } },
+            { "type": "text", "at": [12,18], "size": 11, "color": "#ff0000ff", "value": "Code128 showText=true" }
           ]
         }
       ]
@@ -608,7 +608,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case40",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner TOP-LEFT" }
@@ -632,7 +632,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case41",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topRight", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner TOP-RIGHT" }
@@ -656,7 +656,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case42",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner BOTTOM-LEFT" }
@@ -680,7 +680,7 @@ public void Case26_Code128_NoText_Wide_Page1()
                           {
                             "name": "case43",
                             "pages": "1",
-                            "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
+                            "placement": { "mode": "corner", "corner": "bottomRight", "offset": [10,20] },
                             "primitives": [
                               { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                               { "type": "text", "at": [12,22], "size": 12, "value": "Rotate90 corner BOTTOM-RIGHT" }
@@ -704,7 +704,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case43",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner BOTTOM-RIGHT" }
@@ -728,7 +728,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case40",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner TOP-LEFT" }
@@ -752,7 +752,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case41",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topRight", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner TOP-RIGHT" }
@@ -776,7 +776,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case42",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate180 corner BOTTOM-LEFT" }
@@ -800,7 +800,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case43",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "bottomRight", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner BOTTOM-RIGHT" }
@@ -824,7 +824,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case40",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topLeft", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "topLeft", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner TOP-LEFT" }
@@ -848,7 +848,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case41",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "topRight", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "topRight", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner TOP-RIGHT" }
@@ -872,7 +872,7 @@ public void Case26_Code128_NoText_Wide_Page1()
             {
               "name": "case42",
               "pages": "1",
-              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [150,72] },
+              "placement": { "mode": "corner", "corner": "bottomLeft", "offset": [10,20] },
               "primitives": [
                 { "type": "rect", "rect": [0,0,260,60], "strokeWidth": 1 },
                 { "type": "text", "at": [12,22], "size": 12, "value": "Rotate270 corner BOTTOM-LEFT" }
@@ -897,7 +897,7 @@ public void Case26_Code128_NoText_Wide_Page1()
                 "pages": "1",
                 "placement": { "mode": "corner", "corner": "bottomRight", "offset": [72,120] },
                 "primitives": [
-                  { "type": "rect", "rect": [0,0,320,120], "cornerRadius": 10, "fill": "#00000010", "stroke": "#222222ff", "strokeWidth": 1 },
+                  { "type": "rect", "rect": [0,0,320,120], "cornerRadius": 10, "fill": "#10000000", "stroke": "#ff222222", "strokeWidth": 1 },
                   {
                     "type": "polyline",
                     "points": [
@@ -907,10 +907,10 @@ public void Case26_Code128_NoText_Wide_Page1()
                       [220, 102],
                       [300, 40]
                     ],
-                    "stroke": "#00aa00ff",
+                    "stroke": "#ff00aa00",
                     "strokeWidth": 3
                   },
-                  { "type": "text", "at": [12,100], "size": 11, "color": "#222222ff", "value": "Polyline stroke" }
+                  { "type": "text", "at": [12,100], "size": 11, "color": "#ff222222", "value": "Polyline stroke" }
                 ]
               }
             ]

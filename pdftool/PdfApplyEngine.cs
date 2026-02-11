@@ -180,7 +180,7 @@ internal static class OverlayStampRenderer
         var appearanceBox = new Rectangle(0, 0, rectOnPage.GetWidth(), rectOnPage.GetHeight());
         var xobj = new PdfFormXObject(appearanceBox);
 
-        var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
+        var shiftOrigin = new PointD(-bounds.Value.MinX, bounds.Value.MinY);
         PrimitiveRenderer.RenderOnXObject(
             pdf,
             xobj,
@@ -234,7 +234,7 @@ internal static class OverlayStampRenderer
         var xobj = new PdfFormXObject(appearanceBox);
 
         // Shift primitives so that bounds.MinX/MinY maps to (0,0) in appearance (in VIEW coords).
-        var shiftOrigin = new PointD(-bounds.Value.MinX, -bounds.Value.MinY);
+        var shiftOrigin = new PointD(-bounds.Value.MinX, bounds.Value.MinY);
         PrimitiveRenderer.RenderOnXObject(
             pdf,
             xobj,
@@ -370,16 +370,11 @@ internal static class PrimitiveBoundsCalculator
 
         return new BoundsD(minX, minY, maxX, maxY);
     }
-
-    private static readonly Dictionary<string, PdfFont> Fonts = new();
-
+    
     internal static PdfFont ResolveFont(string? fontName)
     {
         if (string.IsNullOrEmpty(fontName))
             return ResolveFont("Roboto-Regular");
-
-        if (Fonts.TryGetValue(fontName, out var font))
-            return font;
 
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = assembly
@@ -392,8 +387,7 @@ internal static class PrimitiveBoundsCalculator
         using var fontStream = assembly.GetManifestResourceStream(resourceName);
         using var ms = new MemoryStream();
         fontStream?.CopyTo(ms);
-        font = PdfFontFactory.CreateFont(ms.ToArray(), PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
-        Fonts.Add(fontName, font);
+        var font = PdfFontFactory.CreateFont(ms.ToArray(), PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
         return font;
     }
 
