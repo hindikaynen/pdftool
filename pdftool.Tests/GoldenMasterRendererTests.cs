@@ -290,14 +290,14 @@ public class GoldenMasterRendererTests
 
 
 
-[Fact]
-// Primitive: image (base64 PNG) in rect (fit=contain) at TOP-LEFT
-public void Case20_ImageRect_PngBase64_Page1()
-{
-    const string png1x1 =
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PuL9xQAAAABJRU5ErkJggg==";
+    [Fact]
+    // Primitive: image (base64 PNG) in rect (fit=contain) at TOP-LEFT
+    public void Case20_ImageRect_PngBase64_Page1()
+    {
+        const string png1x1 =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PuL9xQAAAABJRU5ErkJggg==";
 
-    var json = """
+        var json = """
     {
       "overlays": [
         {
@@ -314,17 +314,17 @@ public void Case20_ImageRect_PngBase64_Page1()
     }
     """.Replace("__PNG__", png1x1);
 
-    RunSinglePage(json);
-}
+        RunSinglePage(json);
+    }
 
 
 
 
-[Fact]
-// Primitive: barcode.qr with EC level L, placed at TOP-RIGHT
-public void Case23_BarcodeQr_EcL_TopRight_Page1()
-{
-    var json = """
+    [Fact]
+    // Primitive: barcode.qr with EC level L, placed at TOP-RIGHT
+    public void Case23_BarcodeQr_EcL_TopRight_Page1()
+    {
+        var json = """
     {
       "overlays": [
         {
@@ -341,14 +341,14 @@ public void Case23_BarcodeQr_EcL_TopRight_Page1()
     }
     """;
 
-    RunSinglePage(json);
-}
+        RunSinglePage(json);
+    }
 
-[Fact]
-// Primitive: barcode.qr with EC level Q, placed at BOTTOM-LEFT
-public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
-{
-    var json = """
+    [Fact]
+    // Primitive: barcode.qr with EC level Q, placed at BOTTOM-LEFT
+    public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
+    {
+        var json = """
     {
       "overlays": [
         {
@@ -365,14 +365,14 @@ public void Case24_BarcodeQr_EcQ_BottomLeft_Page1()
     }
     """;
 
-    RunSinglePage(json);
-}
+        RunSinglePage(json);
+    }
 
-[Fact]
-// Primitive: barcode.code128 with human-readable text ON, placed at BOTTOM-RIGHT
-public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
-{
-    var json = """
+    [Fact]
+    // Primitive: barcode.code128 with human-readable text ON, placed at BOTTOM-RIGHT
+    public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
+    {
+        var json = """
     {
       "overlays": [
         {
@@ -389,14 +389,14 @@ public void Case25_BarcodeCode128_ShowText_BottomRight_Page1()
     }
     """;
 
-    RunSinglePage(json);
-}
+        RunSinglePage(json);
+    }
 
-[Fact]
-// Primitive: barcode.code128 narrow rect (stress fit into small width), showText OFF
-public void Case26_BarcodeCode128_Narrow_NoText_Page1()
-{
-    var json = """
+    [Fact]
+    // Primitive: barcode.code128 narrow rect (stress fit into small width), showText OFF
+    public void Case26_BarcodeCode128_Narrow_NoText_Page1()
+    {
+        var json = """
     {
       "overlays": [
         {
@@ -413,14 +413,14 @@ public void Case26_BarcodeCode128_Narrow_NoText_Page1()
     }
     """;
 
-    RunSinglePage(json);
-}
+        RunSinglePage(json);
+    }
 
-[Fact]
-// Primitive: multiple barcodes in a single overlay (QR + Code128)
-public void Case27_Barcode_Multiple_Primitives_Page1()
-{
-    var json = """
+    [Fact]
+    // Primitive: multiple barcodes in a single overlay (QR + Code128)
+    public void Case27_Barcode_Multiple_Primitives_Page1()
+    {
+        var json = """
     {
       "overlays": [
         {
@@ -441,15 +441,15 @@ public void Case27_Barcode_Multiple_Primitives_Page1()
     }
     """;
 
-    RunSinglePage(json);
-}
-    
+        RunSinglePage(json);
+    }
 
-[Fact]
-// Primitive: QR code default EC level (M), medium size
-public void Case23_QR_DefaultEc_Page1()
-{
-    RunSinglePage("""
+
+    [Fact]
+    // Primitive: QR code default EC level (M), medium size
+    public void Case23_QR_DefaultEc_Page1()
+    {
+        RunSinglePage("""
     {
       "overlays": [
         {
@@ -463,13 +463,13 @@ public void Case23_QR_DefaultEc_Page1()
       ]
     }
     """);
-}
+    }
 
-[Fact]
-// Primitive: QR code high EC level (H), large size
-public void Case24_QR_EcH_Large_Page1()
-{
-    RunSinglePage("""
+    [Fact]
+    // Primitive: QR code high EC level (H), large size
+    public void Case24_QR_EcH_Large_Page1()
+    {
+        RunSinglePage("""
     {
       "overlays": [
         {
@@ -483,13 +483,13 @@ public void Case24_QR_EcH_Large_Page1()
       ]
     }
     """);
-}
+    }
 
-[Fact]
-// Primitive: Code128 barcode with human-readable text
-public void Case25_Code128_WithText_Page1()
-{
-    RunSinglePage("""
+    [Fact]
+    // Primitive: Code128 barcode with human-readable text
+    public void Case25_Code128_WithText_Page1()
+    {
+        RunSinglePage("""
     {
       "overlays": [
         {
@@ -503,13 +503,13 @@ public void Case25_Code128_WithText_Page1()
       ]
     }
     """);
-}
+    }
 
-[Fact]
-// Primitive: Code128 barcode without human-readable text
-public void Case26_Code128_NoText_Wide_Page1()
-{
-    RunSinglePage("""
+    [Fact]
+    // Primitive: Code128 barcode without human-readable text
+    public void Case26_Code128_NoText_Wide_Page1()
+    {
+        RunSinglePage("""
     {
       "overlays": [
         {
@@ -523,7 +523,7 @@ public void Case26_Code128_NoText_Wide_Page1()
       ]
     }
     """);
-}
+    }
 
     [Fact]
     // Placement: textAnchor (occurrence=first) on page 1 + visual redaction (marker should disappear)
@@ -717,7 +717,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-        [Fact]
+    [Fact]
     // Rotated page (/Rotate=180): corner placement TOP-LEFT
     public void Case40_Rotate180_Corner_TopLeft_Page1()
     {
@@ -789,7 +789,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-        [Fact]
+    [Fact]
     // Rotated page (/Rotate=270): corner placement BOTTOM-RIGHT
     public void Case43_Rotate270_Corner_BottomRight_Page1()
     {
@@ -813,7 +813,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         pageNumber1BasedToRender: 1);
     }
 
-        [Fact]
+    [Fact]
     // Rotated page (/Rotate=270): corner placement TOP-LEFT
     public void Case40_Rotate270_Corner_TopLeft_Page1()
     {
@@ -918,12 +918,143 @@ public void Case26_Code128_NoText_Wide_Page1()
           """);
     }
 
-    private static void RunSinglePage(string jsonSpec, [CallerMemberName]string testName = "undefined")
+    [Fact]
+    public void Case45_SignatureStamp()
+    {
+        RunOnePageFromInput(
+        jsonSpec: """
+        {
+          "overlays": [
+            {
+          "name": "test",
+          "pages": "1",
+          "placement": {
+            "mode": "corner",
+            "corner": "bottomLeft",
+            "offset": [
+              10.0,
+              10.0
+            ]
+          },
+          "primitives": [
+            {
+              "type": "rect",
+              "rect": [
+                0.0,
+                0.0,
+                218.0,
+                70.0
+              ],
+              "fill": "#00000000",
+              "stroke": "#FF000000",
+              "strokeWidth": 1.0,
+              "cornerRadius": 5.0
+            },
+            {
+              "type": "text",
+              "value": "Подлинник электронного документа, подписанный ЭП, хранится в системе электронного документооборота Pilot",
+              "font": "Roboto-Regular",
+              "size": 7.0,
+              "color": "#FF000000",
+              "wrap": true,
+              "align": "left",
+              "hAlign": "left",
+              "vAlign": "middle",
+              "rect": [
+                62.0,
+                3.0,
+                156.0,
+                28.0
+              ]
+            },
+            {
+              "type": "rect",
+              "rect": [
+                0.0,
+                32.0,
+                218.0,
+                10.0
+              ],
+              "fill": "#FF000000",
+              "stroke": "#FF000000",
+              "strokeWidth": 1.0,
+              "cornerRadius": 0.0
+            },
+            {
+              "type": "text",
+              "value": "СВЕДЕНИЯ О СЕРТИФИКАТЕ ЭП",
+              "font": "Roboto-Bold",
+              "size": 7.0,
+              "color": "#FFFFFFFF",
+              "wrap": false,
+              "align": "center",
+              "hAlign": "center",
+              "vAlign": "middle",
+              "rect": [
+                0.0,
+                32.0,
+                218.0,
+                10.0
+              ]
+            },
+            {
+              "type": "image",
+              "rect": [
+                15.0,
+                3.0,
+                32.0,
+                32.0
+              ],
+              "base64": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAHYYAAB2GAV2iE4EAAAZRSURBVFhHrVdtSJZXGL41074/ZmRpJmaZ9mFprXL+EStbiKw/ychaRcJ+LBgFQ3ESTQiaozIlQlouY6RsC1pb5CidG5mVZpZlZiZlfs10UqbmV+667vd5Xl4/3rdsXXDe+zznOee5P8513+e8TvIG7NmzJxgiwsnJKRTSF80LzRWNmIhm9t8WtWjHurq6vjt+/PjAiAYkJSW5dXR0fA6lX+DR3zL6fjEwMBB35MiRk8MM2Lt3bzTEMTRvPk+dOlWWLFkivr6+Mnv2bJk8ebKMGzdOxowZw9ejRnl5uZw6dYrdPw4fPvyxi44agPKvIL5Fc/L29pYNGzZIQECAIBL6vq2tTZ49eya9vb3S398v3d3dOv42cHFxkcWLF6vxBpz5YzUAymMhUqiMitetW6fjlZWVcvPmTXn48KG8fPlSx94FdIgGNDU1GSNSxR81AMrdIdLY37x5s6xevVon5uTkyNOnTzmscHV1FX9/f5k+fbqMHTtWnj9/ru+bm5uNGfYxc+ZMlaYBcLSS0ozAZ2gfLFq0SJU/fvxYMjIypKenR1+6ubnJxo0bZdWqVdofioaGBsnLy5OysjJjZDjmzZun8tGjRypBwmJKNQAPTDNZs2aNvH79Ws6cOWNVTmzfvl0WLlyo1hcXF6vH5AEJumDBAgkKCpJt27bJ/Pnz5ezZs/yesdKCkJAQWblypdTU1CiHgHpEs4QdNQDKPSinTZsmjY2N0traykfF+PHjVTlDnZ6eruSzRUlJieTm5srWrVslNDRUlZSWlup+h4WFaeZMmTJF51ZXV6uEgacPHjyoH1ImAv/yhyyfMWPGoBRDwZDa2lol0e7duyUmJkaioqKUAya4LisrSz1nFAg/Pz9t5AkbYfLJ2dn5unYANQALyym5l9zjyMhIPlpx4sQJzQR6Q45ERESoQbaYMGGCpquZmufPn5f4+HhJTU1Vw9joCIEoavgJNQALL1BSCSeuXbtWoqOjNXeJzs5O5UVCQoJcuKBTrbWBmDVrluzcuVP7ZphNeHh46NZy3EjjShhVry8BNQBh/guKq1taWpSl/Hh4eLgkJibK+vXr1VvTGJMD3NcVK1ZIbGws01i37tWrV/LgwQN9TzCamzZt0v6lS5dUAj8YUmF1Ax9JhDjAj27ZskX3a9KkSZrzBLMD5wP3TyZO5BlkAbOFRgcGBmoEWTtoPKPCmsHSTQ4kJydzeiuc8zl06FCHLgasbMPe1uDll4iCM9lLT1NSUvTj7e3tmnYkHsdfvHghd+7ckStXrmja0SAqYzaQA7t27VK+0Giu4Tdu3bpFNX+i/mepQgNmISJZ6hGFXCiKYhrRiLlz52oJZnOE5cuXa/irqqrU0P3790tfX59mDcl59+5dnQcHC7RjAzMNFeDBScobN27oMyvfm8C99/LykoqKClVOcKuCg4PF09NTo2VUyH5E5CedYINBBqCy/QbRVFdXJ/X19erZSKXXFqyChG0ZZuEyyXfu3DnlCZw7jfPfkoc2GGQAQteHiT+yzyjw8KERjmCGn6RdunSpVsS4uDjNGqbs7du3Oa0Z3n+tC4ZgkAEGMvlDHnAfHW2DGX4Sbd++fbJjxw4NPcs5i1d+fj6ndcKpT48ePdqoi4Zg2LXm2rVrLajpkdhPb6YS04tecF+HgocX2Q8Fcv/+fSksLNQKePnyZT1PMF4H4n2C0P9tLBmGkSJAKBmvX7eUbHtRWLZsmcrs7GzJzMzUtDTuBv+gHUDKBiHtCjlgDyMagMOIbG1n+aQnPErNSmiC4Z8zZ47mNxu8ZQ1OgMcfokp6QnFSWlpam2W2fYx4s7x69WoPtsEP3RAex7yoMCtsbz5m+C9evKhnPCpkPJSmFxUVNRQUFAy+EDiAvS2w1gRuAysaT0FbkP2seiw+mNuHoV8tb0YHuwaAOEUQFazjrIS8HfNUI9zd3ZX99+7d0+KDsOejvutVZ7SwawABzzQlGQUoUS4QJvnM4oN3P2vnHeDQABQiHhzd9JRnObOBhryv8BMO/94grztBxmBwIJAXUNYEXrN8fHz0Hw4jAIPyQL4MY8mo4TACBJR/Twlmy5MnT/QvGq9ufDbwiyHfCSP+OR0KHNO/Q0RZngahDCT8CLflLuN51HhjBAjkeAzEN2j8O9VjFJ1UnBUR/0e5iMh/Irr7E7CTBPsAAAAASUVORK5CYII="
+            },
+            {
+              "type": "text",
+              "value": "Владелец: Алексей Хиндикайнен",
+              "font": "Roboto-Regular",
+              "size": 7.0,
+              "color": "#FF000000",
+              "at": [
+                6.0,
+                45.0,
+              ]
+            },
+            {
+              "type": "text",
+              "value": "Сертификат: 3C96268F2E83E0F41FD6EEDBDCEE41DF83C55643",
+              "font": "Roboto-Regular",
+              "size": 7.0,
+              "color": "#FF000000",
+              "at": [
+                6.0,
+                53.0,
+              ]
+            },
+            {
+              "type": "text",
+              "value": "Действителен: с 23.10.2024 до 23.10.2026",
+              "font": "Roboto-Regular",
+              "size": 7.0,
+              "color": "#FF000000",
+              "at": [
+                6.0,
+                61.0
+              ]
+            }
+          ]
+        }
+          ]
+        }
+        """,
+        inputPdfFileName: "textanchor-2p.pdf",
+        pageNumber1BasedToRender: 1);
+    }
+
+    private static void RunSinglePage(string jsonSpec, [CallerMemberName] string testName = "undefined")
     {
         RunOnePageFromInput(jsonSpec, inputPdfFileName: "empty-10p.pdf", pageNumber1BasedToRender: 1, testName: testName);
     }
 
-    private static void RunOnePageFromInput(string jsonSpec, string inputPdfFileName, int pageNumber1BasedToRender, [CallerMemberName]string testName = "undefined")
+    private static void RunOnePageFromInput(string jsonSpec, string inputPdfFileName, int pageNumber1BasedToRender, [CallerMemberName] string testName = "undefined")
     {
         var testData = TestPaths.GetTestDataDir();
         var inputPdf = Path.Combine(testData, "input", inputPdfFileName);
@@ -980,7 +1111,7 @@ public void Case26_Code128_NoText_Wide_Page1()
         }
         finally
         {
-            Directory.Delete(actualDir, true);    
+            Directory.Delete(actualDir, true);
         }
     }
 

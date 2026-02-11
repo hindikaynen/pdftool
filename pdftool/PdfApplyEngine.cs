@@ -759,7 +759,7 @@ public static class PrimitiveRenderer
             p.SetFont(PrimitiveBoundsCalculator.ResolveFont(t.Font));
             p.SetMargin(0);
             p.SetPadding(0);
-
+            
             if (textColor is not null)
                 p.SetFontColor(textColor.Value.Color);
 
@@ -801,6 +801,8 @@ public static class PrimitiveRenderer
                 };
                 p.SetTextAlignment(align);
             }
+
+            p.SetMultipliedLeading(1);
 
             // Measure height with layout engine. For block width:
             // - wrap=true  => block spans the whole rect width (halign becomes a no-op, as expected)
