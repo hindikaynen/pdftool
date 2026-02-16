@@ -35,6 +35,9 @@ public static class PdfApplyEngine
         {
             foreach (var pageNo in plan.Pages)
             {
+                if(pageNo > totalPages)
+                    continue;
+
                 var page = pdf.GetPage(pageNo);
 
                 // Index is per OverlaySpec per page. For the next page it starts from 0 again.
