@@ -17,6 +17,17 @@ public static class JsonSpecValidator
         if (p.Offset is not null && p.Offset.Length != 2)
             throw new FormatException($"Overlay '{name}': placement.offset must be [dx,dy]");
 
+        if (p.Overrides is not null)
+        {
+            foreach (var (k, v) in p.Overrides)
+            {
+                if (string.IsNullOrWhiteSpace(k))
+                    throw new FormatException($"Overlay '{name}': placement.overrides has an empty key");
+                if (v is null || v.Length != 2)
+                    throw new FormatException($"Overlay '{name}': placement.overrides['{k}'] must be [x,y]");
+            }
+        }
+
         if (p.Mode == PlacementMode.corner)
         {
             if (p.Corner is null)

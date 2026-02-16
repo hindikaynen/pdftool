@@ -37,12 +37,20 @@ public static class PdfApplyEngine
             {
                 var page = pdf.GetPage(pageNo);
 
+                // Index is per OverlaySpec per page. For the next page it starts from 0 again.
+                var overlayIndexOnPage = 0;
+
                 if (plan.Placement.Mode == PlacementMode.corner)
                 {
                     if (plan.Placement.Corner is null)
                         throw new FormatException($"Overlay '{plan.Name}': placement.corner is required.");
 
-                    OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, plan.Placement, plan.Primitives, plan.Name);
+                    var instanceName = BuildOverlayInstanceName(plan.Name, pageNo, overlayIndexOnPage);
+                    if (TryGetOverrideTopLeft(plan.Placement, instanceName, out var tl))
+                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, instanceName, tl.X, tl.Y);
+                    else
+                        OverlayStampRenderer.RenderOverlayAsStamp(pdf, page, plan.Placement, plan.Primitives, instanceName);
+
                     continue;
                 }
 
@@ -66,6 +74,18 @@ public static class PdfApplyEngine
 
                     foreach (var r in selected)
                     {
+                        var instanceName = BuildOverlayInstanceName(plan.Name, pageNo, overlayIndexOnPage);
+
+                        // Overrides have higher priority in any mode.
+                        // For textAnchor we still perform redaction above, but we can place the overlay
+                        // at the requested absolute top-left point.
+                        if (TryGetOverrideTopLeft(plan.Placement, instanceName, out var tl))
+                        {
+                            OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, instanceName, tl.X, tl.Y);
+                            overlayIndexOnPage++;
+                            continue;
+                        }
+
                         // Anchor point is VISUAL TOP-LEFT of found text bbox (in "view" coords, i.e. as user sees the rotated page).
                         var rotation = PageRotationTransform.NormalizeRotation(page.GetRotation());
                         var (unrotW, unrotH) = PageRotationTransform.GetUnrotatedSize(page);
@@ -114,7 +134,8 @@ public static class PdfApplyEngine
                         anchorXTl += dx;
                         anchorYTl += dy;
 
-                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, plan.Name, anchorXTl, anchorYTl);
+                        OverlayStampRenderer.RenderOverlayAsStampAtTopLeftView(pdf, page, plan.Placement, plan.Primitives, instanceName, anchorXTl, anchorYTl);
+                        overlayIndexOnPage++;
                     }
 
                     continue;
@@ -123,6 +144,20 @@ public static class PdfApplyEngine
                 throw new NotSupportedException($"Unsupported placement.mode='{plan.Placement.Mode}'.");
             }
         }
+    }
+
+    private static string BuildOverlayInstanceName(string baseName, int pageNo, int index)
+        => $"{baseName}#p{pageNo}#i{index}";
+
+    private static bool TryGetOverrideTopLeft(PlacementSpec placement, string instanceName, out (double X, double Y) topLeft)
+    {
+        topLeft = default;
+        if (placement.Overrides is null)
+            return false;
+        if (!placement.Overrides.TryGetValue(instanceName, out var xy) || xy is null || xy.Length < 2)
+            return false;
+        topLeft = (xy[0], xy[1]);
+        return true;
     }
 }
 

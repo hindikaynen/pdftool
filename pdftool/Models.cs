@@ -57,6 +57,14 @@ public sealed class PlacementSpec
     public required PlacementMode Mode { get; init; }
 
     /// <summary>
+    /// Optional per-overlay-instance placement overrides.
+    /// Key format: "{baseName}#p{pageNo}#i{index}".
+    /// Value: absolute TOP-LEFT [x,y] in user-facing VIEW coordinates (origin at page top-left, Y-down).
+    /// </summary>
+    [JsonPropertyName("overrides")]
+    public Dictionary<string, double[]>? Overrides { get; init; }
+
+    /// <summary>
     /// Corner mode
     /// </summary>
     [JsonPropertyName("corner")]
@@ -175,7 +183,7 @@ public sealed class RectPrimitiveSpec : PrimitiveSpec
 public sealed class EllipsePrimitiveSpec : PrimitiveSpec
 {
     /// <summary>
-    /// rect [x,y,w,h] — bounding box of the ellipse
+    /// rect [x,y,w,h] - bounding box of the ellipse
     /// </summary>
     [JsonPropertyName("rect")]
     public required double[] Rect { get; init; }
