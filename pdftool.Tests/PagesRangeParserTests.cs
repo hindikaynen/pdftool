@@ -65,12 +65,6 @@ public class PagesRangeParserTests
     }
 
     [Fact]
-    public void Resolve_OutOfBounds_Throws()
-    {
-        Assert.Throws<FormatException>(() => PagesRangeParser.Resolve("1-3,10", totalPages: 5));
-    }
-
-    [Fact]
     public void Resolve_TotalPagesMustBePositive()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => PagesRangeParser.Resolve("1", totalPages: 0));

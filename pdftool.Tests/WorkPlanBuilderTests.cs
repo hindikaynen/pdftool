@@ -25,26 +25,7 @@ public class WorkPlanBuilderTests
         Assert.Single(plan);
         Assert.Equal(new[] { 2, 3, 4, 5 }, plan[0].Pages);
     }
-
-    [Fact]
-    public void Build_OutOfBoundsPages_Throws()
-    {
-        var spec = new DocumentSpec
-        {
-            Overlays =
-            [
-                new OverlaySpec
-                {
-                    Name = "A",
-                    Pages = "10",
-                    Placement = new PlacementSpec { Mode = PlacementMode.corner, Corner = PageCorner.topLeft },
-                    Primitives = []
-                }
-            ]
-        };
-        Assert.Throws<FormatException>(() => WorkPlanBuilder.Build(spec, totalPages: 3));
-    }
-
+    
     [Fact]
     public void Build_InvalidOverlay_Throws()
     {

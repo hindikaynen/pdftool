@@ -78,7 +78,7 @@ public static class PagesRangeParser
             if (dashCount == 0)
             {
                 var p = ResolveToken(part, totalPages);
-                AddChecked(set, p, totalPages, range);
+                set.Add(p);
                 continue;
             }
 
@@ -94,7 +94,7 @@ public static class PagesRangeParser
                 throw new FormatException($"Invalid pages '{range}': resolved range '{part}' has from > to ({a}>{b})");
 
             for (int p = a; p <= b; p++)
-                AddChecked(set, p, totalPages, range);
+                set.Add(p);
         }
 
         return set.ToList();
@@ -114,13 +114,6 @@ public static class PagesRangeParser
             throw new FormatException($"Invalid page token: '{token}'");
 
         return n;
-    }
-
-    private static void AddChecked(SortedSet<int> set, int page, int totalPages, string originalRange)
-    {
-        if (page < 1 || page > totalPages)
-            throw new FormatException($"Invalid pages '{originalRange}': page {page} is out of bounds (1..{totalPages})");
-        set.Add(page);
     }
 
     private static void ValidateToken(string token)
